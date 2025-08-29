@@ -1,0 +1,5285 @@
+Generation Capacity Cost by Tech [ZTech]=
+Generation Capacity[ZTech]*Capital Generation Cost[ZTech]+Total DER Capacity*Capital Generation Cost\
+[Z1PV]
+~	USD
+~		|
+Desired Projects for Margin[ZTech]=
+IF THEN ELSE(
+VMAX(Accumulated Generation Delays[ZTech!])>0:OR:Generation Forecasting Switch=1,
+New Capacity Allocation by Tech[f7,ZTech]*(1-Endogenous Margin Generation Switch),
+New Capacity Allocation by Tech[f1,ZTech]*(1-Endogenous Margin Generation Switch))*Switch Investments
++
+IF THEN ELSE(
+VMAX(Accumulated Generation Delays[ZTech!])>0:OR:Generation Forecasting Switch=1,
+Power Availability Allocation NPV[f7,ZTech]*(1-Endogenous Margin Generation Switch),
+Power Availability Allocation NPV[f1,ZTech]*(1-Endogenous Margin Generation Switch))\
+		*(1-Switch Investments)
+	~	MW
+	~	Min((IF THEN ELSE(MODULO(Time,1)=0,
+		Max(New Capacity Allocation by Tech[ZTech],New Capacity Allocation by Tech in 5 \
+		years[ZTech]),0)
+		/TIME STEP)
+		*(1-Endogenous Margin Generation Switch),
+		Potential Generation Expansion[ZTech])
+	|
+
+Switch Investments=
+	GET XLS CONSTANTS('?Datos', 'General Parameters', 'B16')
+	~	Dmnl
+	~		|
+
+Available GET Capacity[Int]= INTEG (
+	-GET Need for Congestion[Int],
+		Max GET Capacity[Int]*Switch GETs)
+	~	MW
+	~		|
+
+Switch GETs=
+	GET XLS CONSTANTS('?Datos','General Parameters','B22' )
+	~	Dmnl
+	~		|
+
+Switch BESS=
+	GET XLS CONSTANTS('?Datos','General Parameters','B23' )
+	~	Dmnl
+	~		|
+
+Economic Power Generation Capacity Factor[ZTech]=
+	EXP(
+	LOG(1+Profitable Power Technologies[ZTech], EXP(1) )
+	)/
+	Sum(EXP(LOG(1+Profitable Power Technologies[ZTech!], EXP(1) )))
+	~	Dmnl
+	~	EXP(
+		LOG(1+Positive NPV Technologies[ZTech], EXP(1) )
+		)
+		/Sum(EXP(LOG(1+Positive NPV Technologies[ZTech], EXP(1) )))
+	|
+
+Power Availability Allocation NPV[ForecastYear,ZTech]=
+	IF THEN ELSE(Power Allocation[ForecastYear]=1,
+	IF THEN ELSE( Mean Availability Factor Hour of Max Need[ForecastYear,ZTech]=0 , 
+	0 , 
+	(Economic Power Generation Capacity Factor[ZTech]*Max Availability Need[ForecastYear
+	])/Mean Availability Factor Hour of Max Need[ForecastYear,ZTech] )
+	,IF THEN ELSE(Profitable Technologies[ZTech]>0,Size of Investment[ZTech],0))
+	~	MW
+	~		|
+
+Adjusted Offer Price Ideal Dispatch with New Projects[ForecastYear,Hour,ZTech] :EXCEPT:\
+		       [ForecastYear,Hour,HydroDam
+],[ForecastYear,Hour,PVBESSOp1],[ForecastYear,Hour,PVBESSOp2]=
+	IF THEN ELSE(Generation Factor Ideal Dispatch with New Projects[ForecastYear,Hour,ZTech\
+		]=0, 0, 
+	
+	Min Offer Price[ZTech]+
+	Generation Factor Ideal Dispatch with New Projects[ForecastYear,Hour,ZTech] * (Max Offer Price\
+		[ZTech]-Min Offer Price[
+	ZTech
+	])
+	) ~~|
+Adjusted Offer Price Ideal Dispatch with New Projects[ForecastYear,Hour,HydroDam]=
+	IF THEN ELSE(Generation Factor Ideal Dispatch with New Projects[ForecastYear,Hour,HydroDam\
+		]>0,
+	Offer price hydro adjusted[HydroDam],0) ~~|
+Adjusted Offer Price Ideal Dispatch with New Projects[ForecastYear,Hour,PVBESSOp1]=
+	Adjusted New Projects PVBESS Price[ForecastYear,Hour,PVBESSOp1] ~~|
+Adjusted Offer Price Ideal Dispatch with New Projects[ForecastYear,Hour,PVBESSOp2]=
+	Adjusted New Projects PVBESS Price[ForecastYear,Hour,PVBESSOp2]
+	~	USD/MWh
+	~		|
+
+Adjusted Predispatch PVBESS Price[ForecastYear,Hour,Z1PVBESSOp1]=
+	IF THEN ELSE(Ideal Predispacth No BESS[ForecastYear,Hour,Z1PVBESSOp1]>0,
+	Offer price hydro adjusted[Z1HydroDam],0) ~~|
+Adjusted Predispatch PVBESS Price[ForecastYear,Hour,Z2PVBESSOp1]=
+	IF THEN ELSE(Ideal Predispacth No BESS[ForecastYear,Hour,Z2PVBESSOp1]>0,
+	Offer price hydro adjusted[Z2HydroDam],0) ~~|
+Adjusted Predispatch PVBESS Price[ForecastYear,Hour,Z3PVBESSOp1]=
+	IF THEN ELSE(Ideal Predispacth No BESS[ForecastYear,Hour,Z3PVBESSOp1]>0,
+	Offer price hydro adjusted[Z3HydroDam],0) ~~|
+Adjusted Predispatch PVBESS Price[ForecastYear,Hour,Z4PVBESSOp1]=
+	IF THEN ELSE(Ideal Predispacth No BESS[ForecastYear,Hour,Z4PVBESSOp1]>0,
+	Offer price hydro adjusted[Z4HydroDam],0) ~~|
+Adjusted Predispatch PVBESS Price[ForecastYear,Hour,Z5PVBESSOp1]=
+	IF THEN ELSE(Ideal Predispacth No BESS[ForecastYear,Hour,Z5PVBESSOp1]>0,
+	Offer price hydro adjusted[Z5HydroDam],0) ~~|
+Adjusted Predispatch PVBESS Price[ForecastYear,Hour,Z6PVBESSOp1]=
+	IF THEN ELSE(Ideal Predispacth No BESS[ForecastYear,Hour,Z6PVBESSOp1]>0,
+	Offer price hydro adjusted[Z6HydroDam],0) ~~|
+Adjusted Predispatch PVBESS Price[ForecastYear,Hour,Z1PVBESSOp2]=
+	IF THEN ELSE(Ideal Predispacth No BESS[ForecastYear,Hour,Z1PVBESSOp2]>0,
+	Offer price hydro adjusted[Z1HydroDam],0) ~~|
+Adjusted Predispatch PVBESS Price[ForecastYear,Hour,Z2PVBESSOp2]=
+	IF THEN ELSE(Ideal Predispacth No BESS[ForecastYear,Hour,Z2PVBESSOp2]>0,
+	Offer price hydro adjusted[Z2HydroDam],0) ~~|
+Adjusted Predispatch PVBESS Price[ForecastYear,Hour,Z3PVBESSOp2]=
+	IF THEN ELSE(Ideal Predispacth No BESS[ForecastYear,Hour,Z3PVBESSOp2]>0,
+	Offer price hydro adjusted[Z3HydroDam],0) ~~|
+Adjusted Predispatch PVBESS Price[ForecastYear,Hour,Z4PVBESSOp2]=
+	IF THEN ELSE(Ideal Predispacth No BESS[ForecastYear,Hour,Z4PVBESSOp2]>0,
+	Offer price hydro adjusted[Z4HydroDam],0) ~~|
+Adjusted Predispatch PVBESS Price[ForecastYear,Hour,Z5PVBESSOp2]=
+	IF THEN ELSE(Ideal Predispacth No BESS[ForecastYear,Hour,Z5PVBESSOp2]>0,
+	Offer price hydro adjusted[Z5HydroDam],0) ~~|
+Adjusted Predispatch PVBESS Price[ForecastYear,Hour,Z6PVBESSOp2]=
+	IF THEN ELSE(Ideal Predispacth No BESS[ForecastYear,Hour,Z6PVBESSOp2]>0,
+	Offer price hydro adjusted[Z6HydroDam],0)
+	~	USD/MWh
+	~		|
+
+Profitable Power Technologies[ZTech]=
+	IF THEN ELSE(Mean Availability Factor Hour of Max Need[f0,ZTech]=0,0 , Profitable Technologies\
+		[ZTech] )
+	~	Dmnl
+	~	IF THEN ELSE(Mean Availability Factor Hour of Max Need[f0,ZTech]=0,0 , \
+		Profitable Technologies[ZTech] )
+	|
+
+Total Annual Income[ForecastYear,ZTech]=
+	Expected Daily Income[ForecastYear,ZTech]*Days per year+IF THEN ELSE(Accumulated Transmission for Generation delays\
+		>0,Reliability Payments[ZTech],Reliability Payments[ZTech]*0)*0
+	~	USD
+	~		|
+
+Adjusted Ideal PVBESS Price[ForecastYear,Hour,Z1PVBESSOp1]=
+	IF THEN ELSE(Ideal Dispatch[ForecastYear,Hour,Z1PVBESSOp1]>0,
+	Offer price hydro adjusted[Z1HydroDam],0) ~~|
+Adjusted Ideal PVBESS Price[ForecastYear,Hour,Z2PVBESSOp1]=
+	IF THEN ELSE(Ideal Dispatch[ForecastYear,Hour,Z2PVBESSOp1]>0,
+	Offer price hydro adjusted[Z2HydroDam],0) ~~|
+Adjusted Ideal PVBESS Price[ForecastYear,Hour,Z3PVBESSOp1]=
+	IF THEN ELSE(Ideal Dispatch[ForecastYear,Hour,Z3PVBESSOp1]>0,
+	Offer price hydro adjusted[Z3HydroDam],0) ~~|
+Adjusted Ideal PVBESS Price[ForecastYear,Hour,Z4PVBESSOp1]=
+	IF THEN ELSE(Ideal Dispatch[ForecastYear,Hour,Z4PVBESSOp1]>0,
+	Offer price hydro adjusted[Z4HydroDam],0) ~~|
+Adjusted Ideal PVBESS Price[ForecastYear,Hour,Z5PVBESSOp1]=
+	IF THEN ELSE(Ideal Dispatch[ForecastYear,Hour,Z5PVBESSOp1]>0,
+	Offer price hydro adjusted[Z5HydroDam],0) ~~|
+Adjusted Ideal PVBESS Price[ForecastYear,Hour,Z6PVBESSOp1]=
+	IF THEN ELSE(Ideal Dispatch[ForecastYear,Hour,Z6PVBESSOp1]>0,
+	Offer price hydro adjusted[Z6HydroDam],0) ~~|
+Adjusted Ideal PVBESS Price[ForecastYear,Hour,Z1PVBESSOp2]=
+	IF THEN ELSE(Ideal Dispatch[ForecastYear,Hour,Z1PVBESSOp2]>0,
+	Offer price hydro adjusted[Z1HydroDam],0) ~~|
+Adjusted Ideal PVBESS Price[ForecastYear,Hour,Z2PVBESSOp2]=
+	IF THEN ELSE(Ideal Dispatch[ForecastYear,Hour,Z2PVBESSOp2]>0,
+	Offer price hydro adjusted[Z2HydroDam],0) ~~|
+Adjusted Ideal PVBESS Price[ForecastYear,Hour,Z3PVBESSOp2]=
+	IF THEN ELSE(Ideal Dispatch[ForecastYear,Hour,Z3PVBESSOp2]>0,
+	Offer price hydro adjusted[Z3HydroDam],0) ~~|
+Adjusted Ideal PVBESS Price[ForecastYear,Hour,Z4PVBESSOp2]=
+	IF THEN ELSE(Ideal Dispatch[ForecastYear,Hour,Z4PVBESSOp2]>0,
+	Offer price hydro adjusted[Z4HydroDam],0) ~~|
+Adjusted Ideal PVBESS Price[ForecastYear,Hour,Z5PVBESSOp2]=
+	IF THEN ELSE(Ideal Dispatch[ForecastYear,Hour,Z5PVBESSOp2]>0,
+	Offer price hydro adjusted[Z5HydroDam],0) ~~|
+Adjusted Ideal PVBESS Price[ForecastYear,Hour,Z6PVBESSOp2]=
+	IF THEN ELSE(Ideal Dispatch[ForecastYear,Hour,Z6PVBESSOp2]>0,
+	Offer price hydro adjusted[Z6HydroDam],0)
+	~	USD/MWh
+	~		|
+
+Adjusted New Projects PVBESS Price[ForecastYear,Hour,Z1PVBESSOp1]=
+	IF THEN ELSE(Ideal Dispatch with New Capacity[ForecastYear,TPVBESSOp1,Z1,Hour,Z1PVBESSOp1\
+		]>0,
+	Offer price hydro adjusted[Z1HydroDam],0) ~~|
+Adjusted New Projects PVBESS Price[ForecastYear,Hour,Z2PVBESSOp1]=
+	IF THEN ELSE(Ideal Dispatch with New Capacity[ForecastYear,TPVBESSOp1,Z2,Hour,Z2PVBESSOp1\
+		]>0,
+	Offer price hydro adjusted[Z2HydroDam],0) ~~|
+Adjusted New Projects PVBESS Price[ForecastYear,Hour,Z3PVBESSOp1]=
+	IF THEN ELSE(Ideal Dispatch with New Capacity[ForecastYear,TPVBESSOp1,Z3,Hour,Z3PVBESSOp1\
+		]>0,
+	Offer price hydro adjusted[Z3HydroDam],0) ~~|
+Adjusted New Projects PVBESS Price[ForecastYear,Hour,Z4PVBESSOp1]=
+	IF THEN ELSE(Ideal Dispatch with New Capacity[ForecastYear,TPVBESSOp1,Z4,Hour,Z4PVBESSOp1\
+		]>0,
+	Offer price hydro adjusted[Z4HydroDam],0) ~~|
+Adjusted New Projects PVBESS Price[ForecastYear,Hour,Z5PVBESSOp1]=
+	IF THEN ELSE(Ideal Dispatch with New Capacity[ForecastYear,TPVBESSOp1,Z5,Hour,Z5PVBESSOp1\
+		]>0,
+	Offer price hydro adjusted[Z5HydroDam],0) ~~|
+Adjusted New Projects PVBESS Price[ForecastYear,Hour,Z6PVBESSOp1]=
+	IF THEN ELSE(Ideal Dispatch with New Capacity[ForecastYear,TPVBESSOp1,Z6,Hour,Z6PVBESSOp1\
+		]>0,
+	Offer price hydro adjusted[Z6HydroDam],0) ~~|
+Adjusted New Projects PVBESS Price[ForecastYear,Hour,Z1PVBESSOp2]=
+	IF THEN ELSE(Ideal Dispatch with New Capacity[ForecastYear,TPVBESSOp2,Z1,Hour,Z1PVBESSOp2\
+		]>0,
+	Offer price hydro adjusted[Z1HydroDam],0) ~~|
+Adjusted New Projects PVBESS Price[ForecastYear,Hour,Z2PVBESSOp2]=
+	IF THEN ELSE(Ideal Dispatch with New Capacity[ForecastYear,TPVBESSOp2,Z2,Hour,Z2PVBESSOp2\
+		]>0,
+	Offer price hydro adjusted[Z2HydroDam],0) ~~|
+Adjusted New Projects PVBESS Price[ForecastYear,Hour,Z3PVBESSOp2]=
+	IF THEN ELSE(Ideal Dispatch with New Capacity[ForecastYear,TPVBESSOp2,Z3,Hour,Z3PVBESSOp2\
+		]>0,
+	Offer price hydro adjusted[Z3HydroDam],0) ~~|
+Adjusted New Projects PVBESS Price[ForecastYear,Hour,Z4PVBESSOp2]=
+	IF THEN ELSE(Ideal Dispatch with New Capacity[ForecastYear,TPVBESSOp2,Z4,Hour,Z4PVBESSOp2\
+		]>0,
+	Offer price hydro adjusted[Z4HydroDam],0) ~~|
+Adjusted New Projects PVBESS Price[ForecastYear,Hour,Z5PVBESSOp2]=
+	IF THEN ELSE(Ideal Dispatch with New Capacity[ForecastYear,TPVBESSOp2,Z5,Hour,Z5PVBESSOp2\
+		]>0,
+	Offer price hydro adjusted[Z5HydroDam],0) ~~|
+Adjusted New Projects PVBESS Price[ForecastYear,Hour,Z6PVBESSOp2]=
+	IF THEN ELSE(Ideal Dispatch with New Capacity[ForecastYear,TPVBESSOp2,Z6,Hour,Z6PVBESSOp2\
+		]>0,
+	Offer price hydro adjusted[Z6HydroDam],0)
+	~	USD/MWh
+	~		|
+
+Adjusted Isolated PVBESS Price[ForecastYear,Hour,Z1PVBESSOp1]=
+	IF THEN ELSE(Isolated Dispatch[ForecastYear,Hour,Z1PVBESSOp1]>0,
+	Offer price hydro adjusted[Z1HydroDam],0) ~~|
+Adjusted Isolated PVBESS Price[ForecastYear,Hour,Z2PVBESSOp1]=
+	IF THEN ELSE(Isolated Dispatch[ForecastYear,Hour,Z2PVBESSOp1]>0,
+	Offer price hydro adjusted[Z2HydroDam],0) ~~|
+Adjusted Isolated PVBESS Price[ForecastYear,Hour,Z3PVBESSOp1]=
+	IF THEN ELSE(Isolated Dispatch[ForecastYear,Hour,Z3PVBESSOp1]>0,
+	Offer price hydro adjusted[Z3HydroDam],0) ~~|
+Adjusted Isolated PVBESS Price[ForecastYear,Hour,Z4PVBESSOp1]=
+	IF THEN ELSE(Isolated Dispatch[ForecastYear,Hour,Z4PVBESSOp1]>0,
+	Offer price hydro adjusted[Z4HydroDam],0) ~~|
+Adjusted Isolated PVBESS Price[ForecastYear,Hour,Z5PVBESSOp1]=
+	IF THEN ELSE(Isolated Dispatch[ForecastYear,Hour,Z5PVBESSOp1]>0,
+	Offer price hydro adjusted[Z5HydroDam],0) ~~|
+Adjusted Isolated PVBESS Price[ForecastYear,Hour,Z6PVBESSOp1]=
+	IF THEN ELSE(Isolated Dispatch[ForecastYear,Hour,Z6PVBESSOp1]>0,
+	Offer price hydro adjusted[Z6HydroDam],0) ~~|
+Adjusted Isolated PVBESS Price[ForecastYear,Hour,Z1PVBESSOp2]=
+	IF THEN ELSE(Isolated Dispatch[ForecastYear,Hour,Z1PVBESSOp2]>0,
+	Offer price hydro adjusted[Z1HydroDam],0) ~~|
+Adjusted Isolated PVBESS Price[ForecastYear,Hour,Z2PVBESSOp2]=
+	IF THEN ELSE(Isolated Dispatch[ForecastYear,Hour,Z2PVBESSOp2]>0,
+	Offer price hydro adjusted[Z2HydroDam],0) ~~|
+Adjusted Isolated PVBESS Price[ForecastYear,Hour,Z3PVBESSOp2]=
+	IF THEN ELSE(Isolated Dispatch[ForecastYear,Hour,Z3PVBESSOp2]>0,
+	Offer price hydro adjusted[Z3HydroDam],0) ~~|
+Adjusted Isolated PVBESS Price[ForecastYear,Hour,Z4PVBESSOp2]=
+	IF THEN ELSE(Isolated Dispatch[ForecastYear,Hour,Z4PVBESSOp2]>0,
+	Offer price hydro adjusted[Z4HydroDam],0) ~~|
+Adjusted Isolated PVBESS Price[ForecastYear,Hour,Z5PVBESSOp2]=
+	IF THEN ELSE(Isolated Dispatch[ForecastYear,Hour,Z5PVBESSOp2]>0,
+	Offer price hydro adjusted[Z5HydroDam],0) ~~|
+Adjusted Isolated PVBESS Price[ForecastYear,Hour,Z6PVBESSOp2]=
+	IF THEN ELSE(Isolated Dispatch[ForecastYear,Hour,Z6PVBESSOp2]>0,
+	Offer price hydro adjusted[Z6HydroDam],0)
+	~	USD/MWh
+	~		|
+
+Reliability Payments[ZTech] :EXCEPT:    [PVBESSOp1],[PVBESSOp2],[PV]=
+	ENFICC for Reliability charge[ZTech]*Size of Investment[ZTech]*Hours per Day*Days per year\
+		*Reliability charge*0 ~~|
+Reliability Payments[PVBESSOp1]=
+	ENFICC for Reliability charge[PVBESSOp1]*Size of Investment[PVBESSOp1]*Hours per Day\
+		*Days per year*Reliability charge ~~|
+Reliability Payments[PVBESSOp2]=
+	ENFICC for Reliability charge[PVBESSOp2]*Size of Investment[PVBESSOp2]*Hours per Day\
+		*Days per year*Reliability charge ~~|
+Reliability Payments[PV]=
+	ENFICC for Reliability charge[PV]*Size of Investment[PV]*Hours per Day*Days per year\
+		*Reliability charge
+	~	USD/MWh
+	~		|
+
+Transmission under delay condition TI= INTEG (
+	Start Delay Process Transmission for Interconnection-New Transmission for Interconnections\
+		,
+		0)
+	~	km
+	~		|
+
+Start Construction Interconnection Capacity[Int,TrasmTech]= DELAY MATERIAL (
+	 Start licensing Interconnection Capacity[Int,TrasmTech], Transmission License Delay TI\
+		[TrasmTech], 0 , 0)
+	~	MW/Months
+	~		|
+
+Start Construction Transmission for Generation[Zone]= DELAY MATERIAL (
+	Start licensing Transmission for Generation[Zone],Transmission License Delay TG,0,0)
+	~	km/Month
+	~		|
+
+Accumulated Transmission for Generation delays=
+	Expansion Plan Delay TG+Public Tender Delay TG+Investor Selection Delay TG+Transmission License Delay TG\
+		+Transmission Construction Delay TG
+	+Other Transmission delays TG
+	~	Months
+	~		|
+
+Start Delay Process Transmission for Generation[Zone]=
+	DELAY MATERIAL(Start Construction Transmission for Generation[Zone] , Transmission Construction Delay TG\
+		,0 , 0 )
+	~	km/Month
+	~		|
+
+New Transmission for Generation[Zone]= DELAY MATERIAL (
+	Start Delay Process Transmission for Generation[Zone],Other Transmission delays TG,0\
+		,0)
+	~	km/Month
+	~		|
+
+Transmission under Construction TG[Zone]= INTEG (
+	Start Construction Transmission for Generation[Zone]-Start Delay Process Transmission for Generation\
+		[Zone],
+		0)
+	~	km
+	~		|
+
+Transmission under Delay Condition[Zone]= INTEG (
+	Start Delay Process Transmission for Generation[Zone]-New Transmission for Generation\
+		[Zone],
+		0)
+	~	km
+	~		|
+
+Start Delay Process Transmission for Interconnection= DELAY MATERIAL (
+	Start Construction Transmission for Interconnections,Transmission Construction Delay TI\
+		[Lines],0,0)
+	~	km/Month
+	~		|
+
+Interconnection Capacity under Construction[Int,TrasmTech]= INTEG (
+	Start Construction Interconnection Capacity[Int,TrasmTech]-Start Delay Process Interconnection Capacity\
+		[Int,TrasmTech],
+		0)
+	~	MW
+	~		|
+
+Start Delay Process Interconnection Capacity[Int,TrasmTech]= DELAY MATERIAL (
+	 Start Construction Interconnection Capacity[Int,TrasmTech],Transmission Construction Delay TI\
+		[TrasmTech] , 0, 0)
+	~	MW/Months
+	~		|
+
+New Transmission for Interconnections= DELAY MATERIAL (
+	Start Delay Process Transmission for Interconnection,Other Transmission delays TI[Lines
+	],0,0)
+	~	km/Month
+	~		|
+
+Unmet Demand[ForecastYear,Hour]=
+	Residual Demand[ForecastYear,Hour]-Sum(Ideal Dispatch [ForecastYear,Hour,ZTech!])
+	~	MWh
+	~		|
+
+Ideal Dispatch Price Expected[ForecastYear,Hour,ZTech]=
+	SMOOTH(Ideal Dispatch Price with new projects[ForecastYear,Hour,ZTech], Time to Form Price Expectation\
+		 )
+	~	USD/MWh
+	~		|
+
+Total System Cost=
+	(Total Generation Capacity Costs+Total Transmission Cost+Total Generation Dispatch Cost\
+		)/1e+06
+	~	MMUSD
+	~		|
+
+Expected Hourly Income[ForecastYear,ZTech,Hour]=
+	Expected Hourly Generation[ForecastYear,ZTech,Hour]*Ideal Dispatch Price Expected[ForecastYear\
+		,Hour,ZTech]
+	~	USD
+	~	Expected Hourly Generation[ForecastYear,ZTech,Hour]*Ideal Dispatch Price \
+		Expected[ForecastYear,Hour,ZTech]
+	|
+
+Expected Daily Income[ForecastYear,ZTech]=
+	Sum(Expected Hourly Income[ForecastYear,ZTech,Hour!])
+	~	USD
+	~		|
+
+TDERBESS:
+	DERBESS,DER
+	~	
+	~		|
+
+Ideal Dispatch Price with new projects[ForecastYear,Hour,Z1Tech]=
+	VMAX(Adjusted Offer Price Ideal Dispatch with New Projects[ForecastYear,Hour,Z1Tech!\
+		]) ~~|
+Ideal Dispatch Price with new projects[ForecastYear,Hour,Z2Tech]=
+	VMAX(Adjusted Offer Price Ideal Dispatch with New Projects[ForecastYear,Hour,Z2Tech!\
+		]) ~~|
+Ideal Dispatch Price with new projects[ForecastYear,Hour,Z3Tech]=
+	VMAX(Adjusted Offer Price Ideal Dispatch with New Projects[ForecastYear,Hour,Z3Tech!\
+		]) ~~|
+Ideal Dispatch Price with new projects[ForecastYear,Hour,Z4Tech]=
+	VMAX(Adjusted Offer Price Ideal Dispatch with New Projects[ForecastYear,Hour,Z4Tech!\
+		]) ~~|
+Ideal Dispatch Price with new projects[ForecastYear,Hour,Z5Tech]=
+	VMAX(Adjusted Offer Price Ideal Dispatch with New Projects[ForecastYear,Hour,Z5Tech!\
+		]) ~~|
+Ideal Dispatch Price with new projects[ForecastYear,Hour,Z6Tech]=
+	VMAX(Adjusted Offer Price Ideal Dispatch with New Projects[ForecastYear,Hour,Z6Tech!\
+		])
+	~	USD/MWh
+	~		|
+
+Total Transmission Cost=
+	Total Transmission*800000+Sum(Interconnection Capacity[Int!])*200000
+	~	USD
+	~		|
+
+Zonal Price Congested[ForecastYear,Hour,Int,Zone]=
+	IF THEN ELSE( Additional Grid Need for Congestion[ForecastYear,Int]=0 , 0 ,((Min(
+	Interconnection Capacity[Int],
+	Additional Grid Need for Congestion[ForecastYear,Int])
+	/Additional Grid Need for Congestion[ForecastYear,Int])
+	* (Ideal Dispatch Price[ForecastYear,Hour]-Isolated Zone Prices[ForecastYear,Hour,Zone\
+		]))
+	)
+	~	USD/MWh
+	~		|
+
+Ideal Dispatch[ForecastYear,Hour,ZTech]=
+	Ideal Dispatch Vensim[ForecastYear,Hour,ZTech]*(1-Switch Dispatch)
+	+
+	Congested Dispatch Reordered[ForecastYear,Hour,ZTech]*Switch Dispatch
+	~	MWh
+	~		|
+
+Congested Dispatch Reordered[ForecastYear,Hour,ZTech]=
+	Congested Dispatch[ForecastYear,ZTech,Hour]
+	~	MWh
+	~		|
+
+Total Generation Dispatch Cost=
+	(Sum(Electricity Tariff[EnergyUsers!,Zone!])/(ELMCOUNT(EnergyUsers)*ELMCOUNT(Zone)))\
+		*Sum(Residual Demand by zone[f0,Hour!,Zone!])*Days per year
+	~	USD
+	~		|
+
+BESS Peak Shaving=
+	(Generation Capacity by Tech[TPVBESSOp1]+Generation Capacity by Tech[TPVBESSOp2])*MWh por GWh
+	~	GW
+	~		|
+
+Total Generation Capacity Costs=
+	Sum(Generation Capacity Cost by Tech[ZTech!])
+	~	USD
+	~		|
+
+Grid Technology Need[Int,GETs]=
+	IF THEN ELSE(Available GET Capacity[Int]>0, Min(Available GET Capacity[Int],Zones to Expand Interconnection Congested\
+		[Int]) ,0 ) ~~|
+Grid Technology Need[Int,Lines]=
+	IF THEN ELSE(Available GET Capacity[Int]=0,Zones to Expand Interconnection Congested\
+		[Int] ,
+	IF THEN ELSE(Available GET Capacity[Int]<Zones to Expand Interconnection Congested[Int\
+		], Zones to Expand Interconnection Congested[Int]-Available GET Capacity[Int] , 0 )\
+		 )
+	~	MW
+	~		|
+
+GET Need for Congestion[Int]=
+	Grid Technology Need[Int,GETs]/TIME STEP
+	~	MW/Month
+	~		|
+
+Levels:
+	L1,L2,L3
+	~	
+	~		|
+
+Zones to Expand Interconnection Congested[Int]=
+	IF THEN ELSE(Accumulated Transmission for Interconnection delays[Lines]=0 ,Additional Grid Need for Congestion\
+		[f0,Int] , Additional Grid Need for Congestion[f7,Int] )
+	~	MW/Month
+	~		|
+
+Extra Interconnection Capacity[Zone]=
+	1500,1000,2000,1000,500,0
+	~	MW
+	~		|
+
+Generation with New Projects[ForecastYear,TechDER,Zone,Hour,ZTech]=
+	(Expected Generation Capacity[ForecastYear,ZTech]+Size of Investment by Array[TechDER\
+		,Zone,ZTech])*Availability Factor[Hour,ZTech]
+	~	MWh
+	~	(Expected Generation Capacity[ForecastYear,ZTech]+Size of Investment by \
+		Array[TechDER,Zone,ZTech])*Availability Factor BESS Adjusted[Hour,ZTech]
+	|
+
+Accumulated Transmission for Interconnection delays[TrasmTech]=
+	Expansion Plan Delay TI[TrasmTech]+Public Tender Delay TI+Investor Selection Delay TI\
+		[TrasmTech]+Transmission License Delay TI[TrasmTech]
+	+Transmission Construction Delay TI[TrasmTech]
+	+Other Transmission delays TI[TrasmTech]
+	~	Months
+	~		|
+
+Adjusted Interconnection Capacity[ForecastYear,Zone]=
+	Sum(Expected Interconnection Capacity[ForecastYear,Int!]*Interconnection Pairs Cases\
+		[Int!,Zone])-Extra Interconnection Capacity[Zone]
+	~	MW
+	~		|
+
+Profitability Indicator[ZTech]=
+	IF THEN ELSE(Discounted capital cost[ZTech]=0 , 0 , (-Discounted capital cost[ZTech]\
+		+Positive NPV Technologies
+	[ZTech])/-Discounted capital cost[ZTech])
+	~	Dmnl
+	~		|
+
+TrasmTech:
+	Lines,GETs
+	~	
+	~		|
+
+Profitable Technologies[ZTech]=
+	IF THEN ELSE( Profitability Indicator[ZTech]<1.2 , 0 , Positive NPV Technologies[ZTech\
+		])
+	~	USD
+	~		|
+
+Total Interconnection Capacity=
+	Sum(Interconnection Capacity[Int!])
+	~	MW
+	~		|
+
+Max GET Capacity[Int]=
+	Initial Interconnection Capacity[Int]*0.3
+	~	MW
+	~		|
+
+Expected Hourly Generation[ForecastYear,ZTech,Hour]=
+	Generation Factor Ideal Dispatch with New Projects[ForecastYear,Hour,ZTech]*Size of Investment\
+		[ZTech]
+	~	MWh
+	~		|
+
+Generation Factor Ideal Dispatch with New Projects[ForecastYear,Hour,Z1Biomass]=
+	IF THEN ELSE(Ideal Dispatch with New Capacity[ForecastYear,TBiomass,Z1,Hour,Z1Biomass\
+		]=0, 0,
+	Ideal Dispatch with New Capacity[ForecastYear,TBiomass,Z1,Hour,Z1Biomass]
+	/
+	(Generation with New Projects[ForecastYear,TBiomass,Z1,Hour,Z1Biomass]/Availability Factor\
+		[Hour,Z1Biomass
+	])) ~~|
+Generation Factor Ideal Dispatch with New Projects[ForecastYear,Hour,Z1WindOnS]=
+	IF THEN ELSE(Ideal Dispatch with New Capacity[ForecastYear,TWindOnS,Z1,Hour,Z1WindOnS\
+		]=0, 0,
+	Ideal Dispatch with New Capacity[ForecastYear,TWindOnS,Z1,Hour,Z1WindOnS]
+	/
+	(Generation with New Projects[ForecastYear,TWindOnS,Z1,Hour,Z1WindOnS]/Availability Factor\
+		[Hour,Z1WindOnS
+	])) ~~|
+Generation Factor Ideal Dispatch with New Projects[ForecastYear,Hour,Z1WindOffS]=
+	IF THEN ELSE(Ideal Dispatch with New Capacity[ForecastYear,TWindOffS,Z1,Hour,Z1WindOffS\
+		]=0, 0,
+	Ideal Dispatch with New Capacity[ForecastYear,TWindOffS,Z1,Hour,Z1WindOffS]
+	/
+	(Generation with New Projects[ForecastYear,TWindOffS,Z1,Hour,Z1WindOffS]/Availability Factor\
+		[Hour,Z1WindOffS
+	])) ~~|
+Generation Factor Ideal Dispatch with New Projects[ForecastYear,Hour,Z1PV]=
+	IF THEN ELSE(Ideal Dispatch with New Capacity[ForecastYear,TPV,Z1,Hour,Z1PV]=0, 0,
+	Ideal Dispatch with New Capacity[ForecastYear,TPV,Z1,Hour,Z1PV]
+	/
+	(Generation with New Projects[ForecastYear,TPV,Z1,Hour,Z1PV]/Availability Factor[Hour\
+		,Z1PV])) ~~|
+Generation Factor Ideal Dispatch with New Projects[ForecastYear,Hour,Z1HRoR]=
+	IF THEN ELSE(Ideal Dispatch with New Capacity[ForecastYear,THRoR,Z1,Hour,Z1HRoR]=0, \
+		0,
+	Ideal Dispatch with New Capacity[ForecastYear,THRoR,Z1,Hour,Z1HRoR]
+	/
+	(Generation with New Projects[ForecastYear,THRoR,Z1,Hour,Z1HRoR]/Availability Factor\
+		[Hour,Z1HRoR])) ~~|
+Generation Factor Ideal Dispatch with New Projects[ForecastYear,Hour,Z1HydroDam]=
+	IF THEN ELSE(Ideal Dispatch with New Capacity[ForecastYear,THydroDam,Z1,Hour,Z1HydroDam\
+		]=0, 0,
+	Ideal Dispatch with New Capacity[ForecastYear,THydroDam,Z1,Hour,Z1HydroDam]
+	/
+	(Generation with New Projects[ForecastYear,THydroDam,Z1,Hour,Z1HydroDam]/Availability Factor\
+		[Hour,Z1HydroDam
+	])) ~~|
+Generation Factor Ideal Dispatch with New Projects[ForecastYear,Hour,Z1Thermo1]=
+	IF THEN ELSE(Ideal Dispatch with New Capacity[ForecastYear,TThermo1,Z1,Hour,Z1Thermo1\
+		]=0, 0,
+	Ideal Dispatch with New Capacity[ForecastYear,TThermo1,Z1,Hour,Z1Thermo1]
+	/
+	(Generation with New Projects[ForecastYear,TThermo1,Z1,Hour,Z1Thermo1]/Availability Factor\
+		[Hour,Z1Thermo1
+	])) ~~|
+Generation Factor Ideal Dispatch with New Projects[ForecastYear,Hour,Z1Thermo2]=
+	IF THEN ELSE(Ideal Dispatch with New Capacity[ForecastYear,TThermo2,Z1,Hour,Z1Thermo2\
+		]=0, 0,
+	Ideal Dispatch with New Capacity[ForecastYear,TThermo2,Z1,Hour,Z1Thermo2]
+	/
+	(Generation with New Projects[ForecastYear,TThermo2,Z1,Hour,Z1Thermo2]/Availability Factor\
+		[Hour,Z1Thermo2
+	])) ~~|
+Generation Factor Ideal Dispatch with New Projects[ForecastYear,Hour,Z1Geothermal]=
+	IF THEN ELSE(Ideal Dispatch with New Capacity[ForecastYear,TGeothermal,Z1,Hour,Z1Geothermal\
+		]=0, 0,
+	Ideal Dispatch with New Capacity[ForecastYear,TGeothermal,Z1,Hour,Z1Geothermal]
+	/
+	(Generation with New Projects[ForecastYear,TGeothermal,Z1,Hour,Z1Geothermal]/Availability Factor\
+		[Hour,Z1Geothermal
+	])) ~~|
+Generation Factor Ideal Dispatch with New Projects[ForecastYear,Hour,Z1PVBESSOp1]=
+	IF THEN ELSE(Ideal Dispatch with New Capacity[ForecastYear,TPVBESSOp1,Z1,Hour,Z1PVBESSOp1\
+		]=0, 0,
+	Ideal Dispatch with New Capacity[ForecastYear,TPVBESSOp1,Z1,Hour,Z1PVBESSOp1]
+	/
+	(Generation with New Projects[ForecastYear,TPVBESSOp1,Z1,Hour,Z1PVBESSOp1]/Availability Factor\
+		[Hour,Z1PVBESSOp1
+	])) ~~|
+Generation Factor Ideal Dispatch with New Projects[ForecastYear,Hour,Z1PVBESSOp2]=
+	IF THEN ELSE(Ideal Dispatch with New Capacity[ForecastYear,TPVBESSOp2,Z1,Hour,Z1PVBESSOp2\
+		]=0, 0,
+	Ideal Dispatch with New Capacity[ForecastYear,TPVBESSOp2,Z1,Hour,Z1PVBESSOp2]
+	/
+	(Generation with New Projects[ForecastYear,TPVBESSOp2,Z1,Hour,Z1PVBESSOp2]/Availability Factor\
+		[Hour,Z1PVBESSOp2
+	])) ~~|
+Generation Factor Ideal Dispatch with New Projects[ForecastYear,Hour,Z1Other1]=
+	IF THEN ELSE(Ideal Dispatch with New Capacity[ForecastYear,TOther1,Z1,Hour,Z1Other1]\
+		=0, 0,
+	Ideal Dispatch with New Capacity[ForecastYear,TOther1,Z1,Hour,Z1Other1]
+	/
+	(Generation with New Projects[ForecastYear,TOther1,Z1,Hour,Z1Other1]/Availability Factor\
+		[Hour,Z1Other1])) ~~|
+Generation Factor Ideal Dispatch with New Projects[ForecastYear,Hour,Z1Other2]=
+	IF THEN ELSE(Ideal Dispatch with New Capacity[ForecastYear,TOther2,Z1,Hour,Z1Other2]\
+		=0, 0,
+	Ideal Dispatch with New Capacity[ForecastYear,TOther2,Z1,Hour,Z1Other2]
+	/
+	(Generation with New Projects[ForecastYear,TOther2,Z1,Hour,Z1Other2]/Availability Factor\
+		[Hour,Z1Other2])) ~~|
+Generation Factor Ideal Dispatch with New Projects[ForecastYear,Hour,Z1Other3]=
+	IF THEN ELSE(Ideal Dispatch with New Capacity[ForecastYear,TOther3,Z1,Hour,Z1Other3]\
+		=0, 0,
+	Ideal Dispatch with New Capacity[ForecastYear,TOther3,Z1,Hour,Z1Other3]
+	/
+	(Generation with New Projects[ForecastYear,TOther3,Z1,Hour,Z1Other3]/Availability Factor\
+		[Hour,Z1Other3])) ~~|
+Generation Factor Ideal Dispatch with New Projects[ForecastYear,Hour,Z2Biomass]=
+	IF THEN ELSE(Ideal Dispatch with New Capacity[ForecastYear,TBiomass,Z2,Hour,Z2Biomass\
+		]=0, 0,
+	Ideal Dispatch with New Capacity[ForecastYear,TBiomass,Z2,Hour,Z2Biomass]
+	/
+	(Generation with New Projects[ForecastYear,TBiomass,Z2,Hour,Z2Biomass]/Availability Factor\
+		[Hour,Z2Biomass
+	])) ~~|
+Generation Factor Ideal Dispatch with New Projects[ForecastYear,Hour,Z2WindOnS]=
+	IF THEN ELSE(Ideal Dispatch with New Capacity[ForecastYear,TWindOnS,Z2,Hour,Z2WindOnS\
+		]=0, 0,
+	Ideal Dispatch with New Capacity[ForecastYear,TWindOnS,Z2,Hour,Z2WindOnS]
+	/
+	(Generation with New Projects[ForecastYear,TWindOnS,Z2,Hour,Z2WindOnS]/Availability Factor\
+		[Hour,Z2WindOnS
+	])) ~~|
+Generation Factor Ideal Dispatch with New Projects[ForecastYear,Hour,Z2WindOffS]=
+	IF THEN ELSE(Ideal Dispatch with New Capacity[ForecastYear,TWindOffS,Z2,Hour,Z2WindOffS\
+		]=0, 0,
+	Ideal Dispatch with New Capacity[ForecastYear,TWindOffS,Z2,Hour,Z2WindOffS]
+	/
+	(Generation with New Projects[ForecastYear,TWindOffS,Z2,Hour,Z2WindOffS]/Availability Factor\
+		[Hour,Z2WindOffS
+	])) ~~|
+Generation Factor Ideal Dispatch with New Projects[ForecastYear,Hour,Z2PV]=
+	IF THEN ELSE(Ideal Dispatch with New Capacity[ForecastYear,TPV,Z2,Hour,Z2PV]=0, 0,
+	Ideal Dispatch with New Capacity[ForecastYear,TPV,Z2,Hour,Z2PV]
+	/
+	(Generation with New Projects[ForecastYear,TPV,Z2,Hour,Z2PV]/Availability Factor[Hour\
+		,Z2PV])) ~~|
+Generation Factor Ideal Dispatch with New Projects[ForecastYear,Hour,Z2HRoR]=
+	IF THEN ELSE(Ideal Dispatch with New Capacity[ForecastYear,THRoR,Z2,Hour,Z2HRoR]=0, \
+		0,
+	Ideal Dispatch with New Capacity[ForecastYear,THRoR,Z2,Hour,Z2HRoR]
+	/
+	(Generation with New Projects[ForecastYear,THRoR,Z2,Hour,Z2HRoR]/Availability Factor\
+		[Hour,Z2HRoR])) ~~|
+Generation Factor Ideal Dispatch with New Projects[ForecastYear,Hour,Z2HydroDam]=
+	IF THEN ELSE(Ideal Dispatch with New Capacity[ForecastYear,THydroDam,Z2,Hour,Z2HydroDam\
+		]=0, 0,
+	Ideal Dispatch with New Capacity[ForecastYear,THydroDam,Z2,Hour,Z2HydroDam]
+	/
+	(Generation with New Projects[ForecastYear,THydroDam,Z2,Hour,Z2HydroDam]/Availability Factor\
+		[Hour,Z2HydroDam
+	])) ~~|
+Generation Factor Ideal Dispatch with New Projects[ForecastYear,Hour,Z2Thermo1]=
+	IF THEN ELSE(Ideal Dispatch with New Capacity[ForecastYear,TThermo1,Z2,Hour,Z2Thermo1\
+		]=0, 0,
+	Ideal Dispatch with New Capacity[ForecastYear,TThermo1,Z2,Hour,Z2Thermo1]
+	/
+	(Generation with New Projects[ForecastYear,TThermo1,Z2,Hour,Z2Thermo1]/Availability Factor\
+		[Hour,Z2Thermo1
+	])) ~~|
+Generation Factor Ideal Dispatch with New Projects[ForecastYear,Hour,Z2Thermo2]=
+	IF THEN ELSE(Ideal Dispatch with New Capacity[ForecastYear,TThermo2,Z2,Hour,Z2Thermo2\
+		]=0, 0,
+	Ideal Dispatch with New Capacity[ForecastYear,TThermo2,Z2,Hour,Z2Thermo2]
+	/
+	(Generation with New Projects[ForecastYear,TThermo2,Z2,Hour,Z2Thermo2]/Availability Factor\
+		[Hour,Z2Thermo2
+	])) ~~|
+Generation Factor Ideal Dispatch with New Projects[ForecastYear,Hour,Z2Geothermal]=
+	IF THEN ELSE(Ideal Dispatch with New Capacity[ForecastYear,TGeothermal,Z2,Hour,Z2Geothermal\
+		]=0, 0,
+	Ideal Dispatch with New Capacity[ForecastYear,TGeothermal,Z2,Hour,Z2Geothermal]
+	/
+	(Generation with New Projects[ForecastYear,TGeothermal,Z2,Hour,Z2Geothermal]/Availability Factor\
+		[Hour,Z2Geothermal
+])) ~~|
+Generation Factor Ideal Dispatch with New Projects[ForecastYear,Hour,Z2PVBESSOp1]=
+	IF THEN ELSE(Ideal Dispatch with New Capacity[ForecastYear,TPVBESSOp1,Z2,Hour,Z2PVBESSOp1\
+		]=0, 0,
+	Ideal Dispatch with New Capacity[ForecastYear,TPVBESSOp1,Z2,Hour,Z2PVBESSOp1]
+	/
+	(Generation with New Projects[ForecastYear,TPVBESSOp1,Z2,Hour,Z2PVBESSOp1]/Availability Factor\
+		[Hour,Z2PVBESSOp1
+])) ~~|
+Generation Factor Ideal Dispatch with New Projects[ForecastYear,Hour,Z2PVBESSOp2]=
+	IF THEN ELSE(Ideal Dispatch with New Capacity[ForecastYear,TPVBESSOp2,Z2,Hour,Z2PVBESSOp2\
+		]=0, 0,
+	Ideal Dispatch with New Capacity[ForecastYear,TPVBESSOp2,Z2,Hour,Z2PVBESSOp2]
+	/
+	(Generation with New Projects[ForecastYear,TPVBESSOp2,Z2,Hour,Z2PVBESSOp2]/Availability Factor\
+		[Hour,Z2PVBESSOp2
+])) ~~|
+Generation Factor Ideal Dispatch with New Projects[ForecastYear,Hour,Z2Other1]=
+	IF THEN ELSE(Ideal Dispatch with New Capacity[ForecastYear,TOther1,Z2,Hour,Z2Other1]\
+		=0, 0,
+	Ideal Dispatch with New Capacity[ForecastYear,TOther1,Z2,Hour,Z2Other1]
+	/
+	(Generation with New Projects[ForecastYear,TOther1,Z2,Hour,Z2Other1]/Availability Factor\
+		[Hour,Z2Other1])) ~~|
+Generation Factor Ideal Dispatch with New Projects[ForecastYear,Hour,Z2Other2]=
+	IF THEN ELSE(Ideal Dispatch with New Capacity[ForecastYear,TOther2,Z2,Hour,Z2Other2]\
+		=0, 0,
+	Ideal Dispatch with New Capacity[ForecastYear,TOther2,Z2,Hour,Z2Other2]
+	/
+	(Generation with New Projects[ForecastYear,TOther2,Z2,Hour,Z2Other2]/Availability Factor\
+		[Hour,Z2Other2])) ~~|
+Generation Factor Ideal Dispatch with New Projects[ForecastYear,Hour,Z2Other3]=
+	IF THEN ELSE(Ideal Dispatch with New Capacity[ForecastYear,TOther3,Z2,Hour,Z2Other3]\
+		=0, 0,
+	Ideal Dispatch with New Capacity[ForecastYear,TOther3,Z2,Hour,Z2Other3]
+	/
+	(Generation with New Projects[ForecastYear,TOther3,Z2,Hour,Z2Other3]/Availability Factor\
+		[Hour,Z2Other3])) ~~|
+Generation Factor Ideal Dispatch with New Projects[ForecastYear,Hour,Z3Biomass]=
+	IF THEN ELSE(Ideal Dispatch with New Capacity[ForecastYear,TBiomass,Z3,Hour,Z3Biomass\
+		]=0, 0,
+	Ideal Dispatch with New Capacity[ForecastYear,TBiomass,Z3,Hour,Z3Biomass]
+	/
+	(Generation with New Projects[ForecastYear,TBiomass,Z3,Hour,Z3Biomass]/Availability Factor\
+		[Hour,Z3Biomass
+])) ~~|
+Generation Factor Ideal Dispatch with New Projects[ForecastYear,Hour,Z3WindOnS]=
+	IF THEN ELSE(Ideal Dispatch with New Capacity[ForecastYear,TWindOnS,Z3,Hour,Z3WindOnS\
+		]=0, 0,
+	Ideal Dispatch with New Capacity[ForecastYear,TWindOnS,Z3,Hour,Z3WindOnS]
+	/
+	(Generation with New Projects[ForecastYear,TWindOnS,Z3,Hour,Z3WindOnS]/Availability Factor\
+		[Hour,Z3WindOnS
+])) ~~|
+Generation Factor Ideal Dispatch with New Projects[ForecastYear,Hour,Z3WindOffS]=
+	IF THEN ELSE(Ideal Dispatch with New Capacity[ForecastYear,TWindOffS,Z3,Hour,Z3WindOffS\
+		]=0, 0,
+	Ideal Dispatch with New Capacity[ForecastYear,TWindOffS,Z3,Hour,Z3WindOffS]
+	/
+	(Generation with New Projects[ForecastYear,TWindOffS,Z3,Hour,Z3WindOffS]/Availability Factor\
+		[Hour,Z3WindOffS
+])) ~~|
+Generation Factor Ideal Dispatch with New Projects[ForecastYear,Hour,Z3PV]=
+	IF THEN ELSE(Ideal Dispatch with New Capacity[ForecastYear,TPV,Z3,Hour,Z3PV]=0, 0,
+	Ideal Dispatch with New Capacity[ForecastYear,TPV,Z3,Hour,Z3PV]
+	/
+	(Generation with New Projects[ForecastYear,TPV,Z3,Hour,Z3PV]/Availability Factor[Hour\
+		,Z3PV])) ~~|
+Generation Factor Ideal Dispatch with New Projects[ForecastYear,Hour,Z3HRoR]=
+	IF THEN ELSE(Ideal Dispatch with New Capacity[ForecastYear,THRoR,Z3,Hour,Z3HRoR]=0, \
+		0,
+	Ideal Dispatch with New Capacity[ForecastYear,THRoR,Z3,Hour,Z3HRoR]
+	/
+	(Generation with New Projects[ForecastYear,THRoR,Z3,Hour,Z3HRoR]/Availability Factor\
+		[Hour,Z3HRoR])) ~~|
+Generation Factor Ideal Dispatch with New Projects[ForecastYear,Hour,Z3HydroDam]=
+	IF THEN ELSE(Ideal Dispatch with New Capacity[ForecastYear,THydroDam,Z3,Hour,Z3HydroDam\
+		]=0, 0,
+	Ideal Dispatch with New Capacity[ForecastYear,THydroDam,Z3,Hour,Z3HydroDam]
+	/
+	(Generation with New Projects[ForecastYear,THydroDam,Z3,Hour,Z3HydroDam]/Availability Factor\
+		[Hour,Z3HydroDam
+])) ~~|
+Generation Factor Ideal Dispatch with New Projects[ForecastYear,Hour,Z3Thermo1]=
+	IF THEN ELSE(Ideal Dispatch with New Capacity[ForecastYear,TThermo1,Z3,Hour,Z3Thermo1\
+		]=0, 0,
+	Ideal Dispatch with New Capacity[ForecastYear,TThermo1,Z3,Hour,Z3Thermo1]
+	/
+	(Generation with New Projects[ForecastYear,TThermo1,Z3,Hour,Z3Thermo1]/Availability Factor\
+		[Hour,Z3Thermo1
+])) ~~|
+Generation Factor Ideal Dispatch with New Projects[ForecastYear,Hour,Z3Thermo2]=
+	IF THEN ELSE(Ideal Dispatch with New Capacity[ForecastYear,TThermo2,Z3,Hour,Z3Thermo2\
+		]=0, 0,
+	Ideal Dispatch with New Capacity[ForecastYear,TThermo2,Z3,Hour,Z3Thermo2]
+	/
+	(Generation with New Projects[ForecastYear,TThermo2,Z3,Hour,Z3Thermo2]/Availability Factor\
+		[Hour,Z3Thermo2
+])) ~~|
+Generation Factor Ideal Dispatch with New Projects[ForecastYear,Hour,Z3Geothermal]=
+	IF THEN ELSE(Ideal Dispatch with New Capacity[ForecastYear,TGeothermal,Z3,Hour,Z3Geothermal\
+		]=0, 0,
+	Ideal Dispatch with New Capacity[ForecastYear,TGeothermal,Z3,Hour,Z3Geothermal]
+	/
+	(Generation with New Projects[ForecastYear,TGeothermal,Z3,Hour,Z3Geothermal]/Availability Factor\
+		[Hour,Z3Geothermal
+])) ~~|
+Generation Factor Ideal Dispatch with New Projects[ForecastYear,Hour,Z3PVBESSOp1]=
+	IF THEN ELSE(Ideal Dispatch with New Capacity[ForecastYear,TPVBESSOp1,Z3,Hour,Z3PVBESSOp1\
+		]=0, 0,
+	Ideal Dispatch with New Capacity[ForecastYear,TPVBESSOp1,Z3,Hour,Z3PVBESSOp1]
+	/
+	(Generation with New Projects[ForecastYear,TPVBESSOp1,Z3,Hour,Z3PVBESSOp1]/Availability Factor\
+		[Hour,Z3PVBESSOp1
+])) ~~|
+Generation Factor Ideal Dispatch with New Projects[ForecastYear,Hour,Z3PVBESSOp2]=
+	IF THEN ELSE(Ideal Dispatch with New Capacity[ForecastYear,TPVBESSOp2,Z3,Hour,Z3PVBESSOp2\
+		]=0, 0,
+	Ideal Dispatch with New Capacity[ForecastYear,TPVBESSOp2,Z3,Hour,Z3PVBESSOp2]
+	/
+	(Generation with New Projects[ForecastYear,TPVBESSOp2,Z3,Hour,Z3PVBESSOp2]/Availability Factor\
+		[Hour,Z3PVBESSOp2
+])) ~~|
+Generation Factor Ideal Dispatch with New Projects[ForecastYear,Hour,Z3Other1]=
+	IF THEN ELSE(Ideal Dispatch with New Capacity[ForecastYear,TOther1,Z3,Hour,Z3Other1]\
+		=0, 0,
+	Ideal Dispatch with New Capacity[ForecastYear,TOther1,Z3,Hour,Z3Other1]
+	/
+	(Generation with New Projects[ForecastYear,TOther1,Z3,Hour,Z3Other1]/Availability Factor\
+		[Hour,Z3Other1])) ~~|
+Generation Factor Ideal Dispatch with New Projects[ForecastYear,Hour,Z3Other2]=
+	IF THEN ELSE(Ideal Dispatch with New Capacity[ForecastYear,TOther2,Z3,Hour,Z3Other2]\
+		=0, 0,
+	Ideal Dispatch with New Capacity[ForecastYear,TOther2,Z3,Hour,Z3Other2]
+	/
+	(Generation with New Projects[ForecastYear,TOther2,Z3,Hour,Z3Other2]/Availability Factor\
+		[Hour,Z3Other2])) ~~|
+Generation Factor Ideal Dispatch with New Projects[ForecastYear,Hour,Z3Other3]=
+	IF THEN ELSE(Ideal Dispatch with New Capacity[ForecastYear,TOther3,Z3,Hour,Z3Other3]\
+		=0, 0,
+	Ideal Dispatch with New Capacity[ForecastYear,TOther3,Z3,Hour,Z3Other3]
+	/
+	(Generation with New Projects[ForecastYear,TOther3,Z3,Hour,Z3Other3]/Availability Factor\
+		[Hour,Z3Other3])) ~~|
+Generation Factor Ideal Dispatch with New Projects[ForecastYear,Hour,Z4Biomass]=
+	IF THEN ELSE(Ideal Dispatch with New Capacity[ForecastYear,TBiomass,Z4,Hour,Z4Biomass\
+		]=0, 0,
+	Ideal Dispatch with New Capacity[ForecastYear,TBiomass,Z4,Hour,Z4Biomass]
+	/
+	(Generation with New Projects[ForecastYear,TBiomass,Z4,Hour,Z4Biomass]/Availability Factor\
+		[Hour,Z4Biomass
+])) ~~|
+Generation Factor Ideal Dispatch with New Projects[ForecastYear,Hour,Z4WindOnS]=
+	IF THEN ELSE(Ideal Dispatch with New Capacity[ForecastYear,TWindOnS,Z4,Hour,Z4WindOnS\
+		]=0, 0,
+	Ideal Dispatch with New Capacity[ForecastYear,TWindOnS,Z4,Hour,Z4WindOnS]
+	/
+	(Generation with New Projects[ForecastYear,TWindOnS,Z4,Hour,Z4WindOnS]/Availability Factor\
+		[Hour,Z4WindOnS
+])) ~~|
+Generation Factor Ideal Dispatch with New Projects[ForecastYear,Hour,Z4WindOffS]=
+	IF THEN ELSE(Ideal Dispatch with New Capacity[ForecastYear,TWindOffS,Z4,Hour,Z4WindOffS\
+		]=0, 0,
+	Ideal Dispatch with New Capacity[ForecastYear,TWindOffS,Z4,Hour,Z4WindOffS]
+	/
+	(Generation with New Projects[ForecastYear,TWindOffS,Z4,Hour,Z4WindOffS]/Availability Factor\
+		[Hour,Z4WindOffS
+])) ~~|
+Generation Factor Ideal Dispatch with New Projects[ForecastYear,Hour,Z4PV]=
+	IF THEN ELSE(Ideal Dispatch with New Capacity[ForecastYear,TPV,Z4,Hour,Z4PV]=0, 0,
+	Ideal Dispatch with New Capacity[ForecastYear,TPV,Z4,Hour,Z4PV]
+	/
+	(Generation with New Projects[ForecastYear,TPV,Z4,Hour,Z4PV]/Availability Factor[Hour\
+		,Z4PV])) ~~|
+Generation Factor Ideal Dispatch with New Projects[ForecastYear,Hour,Z4HRoR]=
+	IF THEN ELSE(Ideal Dispatch with New Capacity[ForecastYear,THRoR,Z4,Hour,Z4HRoR]=0, \
+		0,
+	Ideal Dispatch with New Capacity[ForecastYear,THRoR,Z4,Hour,Z4HRoR]
+	/
+	(Generation with New Projects[ForecastYear,THRoR,Z4,Hour,Z4HRoR]/Availability Factor\
+		[Hour,Z4HRoR])) ~~|
+Generation Factor Ideal Dispatch with New Projects[ForecastYear,Hour,Z4HydroDam]=
+	IF THEN ELSE(Ideal Dispatch with New Capacity[ForecastYear,THydroDam,Z4,Hour,Z4HydroDam\
+		]=0, 0,
+	Ideal Dispatch with New Capacity[ForecastYear,THydroDam,Z4,Hour,Z4HydroDam]
+	/
+	(Generation with New Projects[ForecastYear,THydroDam,Z4,Hour,Z4HydroDam]/Availability Factor\
+		[Hour,Z4HydroDam
+])) ~~|
+Generation Factor Ideal Dispatch with New Projects[ForecastYear,Hour,Z4Thermo1]=
+	IF THEN ELSE(Ideal Dispatch with New Capacity[ForecastYear,TThermo1,Z4,Hour,Z4Thermo1\
+		]=0, 0,
+	Ideal Dispatch with New Capacity[ForecastYear,TThermo1,Z4,Hour,Z4Thermo1]
+	/
+	(Generation with New Projects[ForecastYear,TThermo1,Z4,Hour,Z4Thermo1]/Availability Factor\
+		[Hour,Z4Thermo1
+])) ~~|
+Generation Factor Ideal Dispatch with New Projects[ForecastYear,Hour,Z4Thermo2]=
+	IF THEN ELSE(Ideal Dispatch with New Capacity[ForecastYear,TThermo2,Z4,Hour,Z4Thermo2\
+		]=0, 0,
+	Ideal Dispatch with New Capacity[ForecastYear,TThermo2,Z4,Hour,Z4Thermo2]
+	/
+	(Generation with New Projects[ForecastYear,TThermo2,Z4,Hour,Z4Thermo2]/Availability Factor\
+		[Hour,Z4Thermo2
+])) ~~|
+Generation Factor Ideal Dispatch with New Projects[ForecastYear,Hour,Z4Geothermal]=
+	IF THEN ELSE(Ideal Dispatch with New Capacity[ForecastYear,TGeothermal,Z4,Hour,Z4Geothermal\
+		]=0, 0,
+	Ideal Dispatch with New Capacity[ForecastYear,TGeothermal,Z4,Hour,Z4Geothermal]
+	/
+	(Generation with New Projects[ForecastYear,TGeothermal,Z4,Hour,Z4Geothermal]/Availability Factor\
+		[Hour,Z4Geothermal
+])) ~~|
+Generation Factor Ideal Dispatch with New Projects[ForecastYear,Hour,Z4PVBESSOp1]=
+	IF THEN ELSE(Ideal Dispatch with New Capacity[ForecastYear,TPVBESSOp1,Z4,Hour,Z4PVBESSOp1\
+		]=0, 0,
+	Ideal Dispatch with New Capacity[ForecastYear,TPVBESSOp1,Z4,Hour,Z4PVBESSOp1]
+	/
+	(Generation with New Projects[ForecastYear,TPVBESSOp1,Z4,Hour,Z4PVBESSOp1]/Availability Factor\
+		[Hour,Z4PVBESSOp1
+])) ~~|
+Generation Factor Ideal Dispatch with New Projects[ForecastYear,Hour,Z4PVBESSOp2]=
+	IF THEN ELSE(Ideal Dispatch with New Capacity[ForecastYear,TPVBESSOp2,Z4,Hour,Z4PVBESSOp2\
+		]=0, 0,
+	Ideal Dispatch with New Capacity[ForecastYear,TPVBESSOp2,Z4,Hour,Z4PVBESSOp2]
+	/
+	(Generation with New Projects[ForecastYear,TPVBESSOp2,Z4,Hour,Z4PVBESSOp2]/Availability Factor\
+		[Hour,Z4PVBESSOp2
+])) ~~|
+Generation Factor Ideal Dispatch with New Projects[ForecastYear,Hour,Z4Other1]=
+	IF THEN ELSE(Ideal Dispatch with New Capacity[ForecastYear,TOther1,Z4,Hour,Z4Other1]\
+		=0, 0,
+	Ideal Dispatch with New Capacity[ForecastYear,TOther1,Z4,Hour,Z4Other1]
+	/
+	(Generation with New Projects[ForecastYear,TOther1,Z4,Hour,Z4Other1]/Availability Factor\
+		[Hour,Z4Other1])) ~~|
+Generation Factor Ideal Dispatch with New Projects[ForecastYear,Hour,Z4Other2]=
+	IF THEN ELSE(Ideal Dispatch with New Capacity[ForecastYear,TOther2,Z4,Hour,Z4Other2]\
+		=0, 0,
+	Ideal Dispatch with New Capacity[ForecastYear,TOther2,Z4,Hour,Z4Other2]
+	/
+	(Generation with New Projects[ForecastYear,TOther2,Z4,Hour,Z4Other2]/Availability Factor\
+		[Hour,Z4Other2])) ~~|
+Generation Factor Ideal Dispatch with New Projects[ForecastYear,Hour,Z4Other3]=
+	IF THEN ELSE(Ideal Dispatch with New Capacity[ForecastYear,TOther3,Z4,Hour,Z4Other3]\
+		=0, 0,
+	Ideal Dispatch with New Capacity[ForecastYear,TOther3,Z4,Hour,Z4Other3]
+	/
+	(Generation with New Projects[ForecastYear,TOther3,Z4,Hour,Z4Other3]/Availability Factor\
+		[Hour,Z4Other3])) ~~|
+Generation Factor Ideal Dispatch with New Projects[ForecastYear,Hour,Z5Biomass]=
+	IF THEN ELSE(Ideal Dispatch with New Capacity[ForecastYear,TBiomass,Z5,Hour,Z5Biomass\
+		]=0, 0,
+	Ideal Dispatch with New Capacity[ForecastYear,TBiomass,Z5,Hour,Z5Biomass]
+	/
+	(Generation with New Projects[ForecastYear,TBiomass,Z5,Hour,Z5Biomass]/Availability Factor\
+		[Hour,Z5Biomass
+])) ~~|
+Generation Factor Ideal Dispatch with New Projects[ForecastYear,Hour,Z5WindOnS]=
+	IF THEN ELSE(Ideal Dispatch with New Capacity[ForecastYear,TWindOnS,Z5,Hour,Z5WindOnS\
+		]=0, 0,
+	Ideal Dispatch with New Capacity[ForecastYear,TWindOnS,Z5,Hour,Z5WindOnS]
+	/
+	(Generation with New Projects[ForecastYear,TWindOnS,Z5,Hour,Z5WindOnS]/Availability Factor\
+		[Hour,Z5WindOnS
+])) ~~|
+Generation Factor Ideal Dispatch with New Projects[ForecastYear,Hour,Z5WindOffS]=
+	IF THEN ELSE(Ideal Dispatch with New Capacity[ForecastYear,TWindOffS,Z5,Hour,Z5WindOffS\
+		]=0, 0,
+	Ideal Dispatch with New Capacity[ForecastYear,TWindOffS,Z5,Hour,Z5WindOffS]
+	/
+	(Generation with New Projects[ForecastYear,TWindOffS,Z5,Hour,Z5WindOffS]/Availability Factor\
+		[Hour,Z5WindOffS
+])) ~~|
+Generation Factor Ideal Dispatch with New Projects[ForecastYear,Hour,Z5PV]=
+	IF THEN ELSE(Ideal Dispatch with New Capacity[ForecastYear,TPV,Z5,Hour,Z5PV]=0, 0,
+	Ideal Dispatch with New Capacity[ForecastYear,TPV,Z5,Hour,Z5PV]
+	/
+	(Generation with New Projects[ForecastYear,TPV,Z5,Hour,Z5PV]/Availability Factor[Hour\
+		,Z5PV])) ~~|
+Generation Factor Ideal Dispatch with New Projects[ForecastYear,Hour,Z5HRoR]=
+	IF THEN ELSE(Ideal Dispatch with New Capacity[ForecastYear,THRoR,Z5,Hour,Z5HRoR]=0, \
+		0,
+	Ideal Dispatch with New Capacity[ForecastYear,THRoR,Z5,Hour,Z5HRoR]
+	/
+	(Generation with New Projects[ForecastYear,THRoR,Z5,Hour,Z5HRoR]/Availability Factor\
+		[Hour,Z5HRoR])) ~~|
+Generation Factor Ideal Dispatch with New Projects[ForecastYear,Hour,Z5HydroDam]=
+	IF THEN ELSE(Ideal Dispatch with New Capacity[ForecastYear,THydroDam,Z5,Hour,Z5HydroDam\
+		]=0, 0,
+	Ideal Dispatch with New Capacity[ForecastYear,THydroDam,Z5,Hour,Z5HydroDam]
+	/
+	(Generation with New Projects[ForecastYear,THydroDam,Z5,Hour,Z5HydroDam]/Availability Factor\
+		[Hour,Z5HydroDam
+])) ~~|
+Generation Factor Ideal Dispatch with New Projects[ForecastYear,Hour,Z5Thermo1]=
+	IF THEN ELSE(Ideal Dispatch with New Capacity[ForecastYear,TThermo1,Z5,Hour,Z5Thermo1\
+		]=0, 0,
+	Ideal Dispatch with New Capacity[ForecastYear,TThermo1,Z5,Hour,Z5Thermo1]
+	/
+	(Generation with New Projects[ForecastYear,TThermo1,Z5,Hour,Z5Thermo1]/Availability Factor\
+		[Hour,Z5Thermo1
+])) ~~|
+Generation Factor Ideal Dispatch with New Projects[ForecastYear,Hour,Z5Thermo2]=
+	IF THEN ELSE(Ideal Dispatch with New Capacity[ForecastYear,TThermo2,Z5,Hour,Z5Thermo2\
+		]=0, 0,
+	Ideal Dispatch with New Capacity[ForecastYear,TThermo2,Z5,Hour,Z5Thermo2]
+	/
+	(Generation with New Projects[ForecastYear,TThermo2,Z5,Hour,Z5Thermo2]/Availability Factor\
+		[Hour,Z5Thermo2
+])) ~~|
+Generation Factor Ideal Dispatch with New Projects[ForecastYear,Hour,Z5Geothermal]=
+	IF THEN ELSE(Ideal Dispatch with New Capacity[ForecastYear,TGeothermal,Z5,Hour,Z5Geothermal\
+		]=0, 0,
+	Ideal Dispatch with New Capacity[ForecastYear,TGeothermal,Z5,Hour,Z5Geothermal]
+	/
+	(Generation with New Projects[ForecastYear,TGeothermal,Z5,Hour,Z5Geothermal]/Availability Factor\
+		[Hour,Z5Geothermal
+])) ~~|
+Generation Factor Ideal Dispatch with New Projects[ForecastYear,Hour,Z5PVBESSOp1]=
+	IF THEN ELSE(Ideal Dispatch with New Capacity[ForecastYear,TPVBESSOp1,Z5,Hour,Z5PVBESSOp1\
+		]=0, 0,
+	Ideal Dispatch with New Capacity[ForecastYear,TPVBESSOp1,Z5,Hour,Z5PVBESSOp1]
+	/
+	(Generation with New Projects[ForecastYear,TPVBESSOp1,Z5,Hour,Z5PVBESSOp1]/Availability Factor\
+		[Hour,Z5PVBESSOp1
+])) ~~|
+Generation Factor Ideal Dispatch with New Projects[ForecastYear,Hour,Z5PVBESSOp2]=
+	IF THEN ELSE(Ideal Dispatch with New Capacity[ForecastYear,TPVBESSOp2,Z5,Hour,Z5PVBESSOp2\
+		]=0, 0,
+	Ideal Dispatch with New Capacity[ForecastYear,TPVBESSOp2,Z5,Hour,Z5PVBESSOp2]
+	/
+	(Generation with New Projects[ForecastYear,TPVBESSOp2,Z5,Hour,Z5PVBESSOp2]/Availability Factor\
+		[Hour,Z5PVBESSOp2
+])) ~~|
+Generation Factor Ideal Dispatch with New Projects[ForecastYear,Hour,Z5Other1]=
+	IF THEN ELSE(Ideal Dispatch with New Capacity[ForecastYear,TOther1,Z5,Hour,Z5Other1]\
+		=0, 0,
+	Ideal Dispatch with New Capacity[ForecastYear,TOther1,Z5,Hour,Z5Other1]
+	/
+	(Generation with New Projects[ForecastYear,TOther1,Z5,Hour,Z5Other1]/Availability Factor\
+		[Hour,Z5Other1])) ~~|
+Generation Factor Ideal Dispatch with New Projects[ForecastYear,Hour,Z5Other2]=
+	IF THEN ELSE(Ideal Dispatch with New Capacity[ForecastYear,TOther2,Z5,Hour,Z5Other2]\
+		=0, 0,
+	Ideal Dispatch with New Capacity[ForecastYear,TOther2,Z5,Hour,Z5Other2]
+	/
+	(Generation with New Projects[ForecastYear,TOther2,Z5,Hour,Z5Other2]/Availability Factor\
+		[Hour,Z5Other2])) ~~|
+Generation Factor Ideal Dispatch with New Projects[ForecastYear,Hour,Z5Other3]=
+	IF THEN ELSE(Ideal Dispatch with New Capacity[ForecastYear,TOther3,Z5,Hour,Z5Other3]\
+		=0, 0,
+	Ideal Dispatch with New Capacity[ForecastYear,TOther3,Z5,Hour,Z5Other3]
+	/
+	(Generation with New Projects[ForecastYear,TOther3,Z5,Hour,Z5Other3]/Availability Factor\
+		[Hour,Z5Other3])) ~~|
+Generation Factor Ideal Dispatch with New Projects[ForecastYear,Hour,Z6Biomass]=
+	IF THEN ELSE(Ideal Dispatch with New Capacity[ForecastYear,TBiomass,Z6,Hour,Z6Biomass\
+		]=0, 0,
+	Ideal Dispatch with New Capacity[ForecastYear,TBiomass,Z6,Hour,Z6Biomass]
+	/
+	(Generation with New Projects[ForecastYear,TBiomass,Z6,Hour,Z6Biomass]/Availability Factor\
+		[Hour,Z6Biomass
+])) ~~|
+Generation Factor Ideal Dispatch with New Projects[ForecastYear,Hour,Z6WindOnS]=
+	IF THEN ELSE(Ideal Dispatch with New Capacity[ForecastYear,TWindOnS,Z6,Hour,Z6WindOnS\
+		]=0, 0,
+	Ideal Dispatch with New Capacity[ForecastYear,TWindOnS,Z6,Hour,Z6WindOnS]
+	/
+	(Generation with New Projects[ForecastYear,TWindOnS,Z6,Hour,Z6WindOnS]/Availability Factor\
+		[Hour,Z6WindOnS
+])) ~~|
+Generation Factor Ideal Dispatch with New Projects[ForecastYear,Hour,Z6WindOffS]=
+	IF THEN ELSE(Ideal Dispatch with New Capacity[ForecastYear,TWindOffS,Z6,Hour,Z6WindOffS\
+		]=0, 0,
+	Ideal Dispatch with New Capacity[ForecastYear,TWindOffS,Z6,Hour,Z6WindOffS]
+	/
+	(Generation with New Projects[ForecastYear,TWindOffS,Z6,Hour,Z6WindOffS]/Availability Factor\
+		[Hour,Z6WindOffS
+])) ~~|
+Generation Factor Ideal Dispatch with New Projects[ForecastYear,Hour,Z6PV]=
+	IF THEN ELSE(Ideal Dispatch with New Capacity[ForecastYear,TPV,Z6,Hour,Z6PV]=0, 0,
+	Ideal Dispatch with New Capacity[ForecastYear,TPV,Z6,Hour,Z6PV]
+	/
+	(Generation with New Projects[ForecastYear,TPV,Z6,Hour,Z6PV]/Availability Factor[Hour\
+		,Z6PV])) ~~|
+Generation Factor Ideal Dispatch with New Projects[ForecastYear,Hour,Z6HRoR]=
+	IF THEN ELSE(Ideal Dispatch with New Capacity[ForecastYear,THRoR,Z6,Hour,Z6HRoR]=0, \
+		0,
+	Ideal Dispatch with New Capacity[ForecastYear,THRoR,Z6,Hour,Z6HRoR]
+	/
+	(Generation with New Projects[ForecastYear,THRoR,Z6,Hour,Z6HRoR]/Availability Factor\
+		[Hour,Z6HRoR])) ~~|
+Generation Factor Ideal Dispatch with New Projects[ForecastYear,Hour,Z6HydroDam]=
+	IF THEN ELSE(Ideal Dispatch with New Capacity[ForecastYear,THydroDam,Z6,Hour,Z6HydroDam\
+		]=0, 0,
+	Ideal Dispatch with New Capacity[ForecastYear,THydroDam,Z6,Hour,Z6HydroDam]
+	/
+	(Generation with New Projects[ForecastYear,THydroDam,Z6,Hour,Z6HydroDam]/Availability Factor\
+		[Hour,Z6HydroDam
+])) ~~|
+Generation Factor Ideal Dispatch with New Projects[ForecastYear,Hour,Z6Thermo1]=
+	IF THEN ELSE(Ideal Dispatch with New Capacity[ForecastYear,TThermo1,Z6,Hour,Z6Thermo1\
+		]=0, 0,
+	Ideal Dispatch with New Capacity[ForecastYear,TThermo1,Z6,Hour,Z6Thermo1]
+	/
+	(Generation with New Projects[ForecastYear,TThermo1,Z6,Hour,Z6Thermo1]/Availability Factor\
+		[Hour,Z6Thermo1
+])) ~~|
+Generation Factor Ideal Dispatch with New Projects[ForecastYear,Hour,Z6Thermo2]=
+	IF THEN ELSE(Ideal Dispatch with New Capacity[ForecastYear,TThermo2,Z6,Hour,Z6Thermo2\
+		]=0, 0,
+	Ideal Dispatch with New Capacity[ForecastYear,TThermo2,Z6,Hour,Z6Thermo2]
+	/
+	(Generation with New Projects[ForecastYear,TThermo2,Z6,Hour,Z6Thermo2]/Availability Factor\
+		[Hour,Z6Thermo2
+])) ~~|
+Generation Factor Ideal Dispatch with New Projects[ForecastYear,Hour,Z6Geothermal]=
+	IF THEN ELSE(Ideal Dispatch with New Capacity[ForecastYear,TGeothermal,Z6,Hour,Z6Geothermal\
+		]=0, 0,
+	Ideal Dispatch with New Capacity[ForecastYear,TGeothermal,Z6,Hour,Z6Geothermal]
+	/
+	(Generation with New Projects[ForecastYear,TGeothermal,Z6,Hour,Z6Geothermal]/Availability Factor\
+		[Hour,Z6Geothermal
+])) ~~|
+Generation Factor Ideal Dispatch with New Projects[ForecastYear,Hour,Z6PVBESSOp1]=
+	IF THEN ELSE(Ideal Dispatch with New Capacity[ForecastYear,TPVBESSOp1,Z6,Hour,Z6PVBESSOp1\
+		]=0, 0,
+	Ideal Dispatch with New Capacity[ForecastYear,TPVBESSOp1,Z6,Hour,Z6PVBESSOp1]
+	/
+	(Generation with New Projects[ForecastYear,TPVBESSOp1,Z6,Hour,Z6PVBESSOp1]/Availability Factor\
+		[Hour,Z6PVBESSOp1
+])) ~~|
+Generation Factor Ideal Dispatch with New Projects[ForecastYear,Hour,Z6PVBESSOp2]=
+	IF THEN ELSE(Ideal Dispatch with New Capacity[ForecastYear,TPVBESSOp2,Z6,Hour,Z6PVBESSOp2\
+		]=0, 0,
+	Ideal Dispatch with New Capacity[ForecastYear,TPVBESSOp2,Z6,Hour,Z6PVBESSOp2]
+	/
+	(Generation with New Projects[ForecastYear,TPVBESSOp2,Z6,Hour,Z6PVBESSOp2]/Availability Factor\
+		[Hour,Z6PVBESSOp2
+])) ~~|
+Generation Factor Ideal Dispatch with New Projects[ForecastYear,Hour,Z6Other1]=
+	IF THEN ELSE(Ideal Dispatch with New Capacity[ForecastYear,TOther1,Z6,Hour,Z6Other1]\
+		=0, 0,
+	Ideal Dispatch with New Capacity[ForecastYear,TOther1,Z6,Hour,Z6Other1]
+	/
+	(Generation with New Projects[ForecastYear,TOther1,Z6,Hour,Z6Other1]/Availability Factor\
+		[Hour,Z6Other1])) ~~|
+Generation Factor Ideal Dispatch with New Projects[ForecastYear,Hour,Z6Other2]=
+	IF THEN ELSE(Ideal Dispatch with New Capacity[ForecastYear,TOther2,Z6,Hour,Z6Other2]\
+		=0, 0,
+	Ideal Dispatch with New Capacity[ForecastYear,TOther2,Z6,Hour,Z6Other2]
+	/
+	(Generation with New Projects[ForecastYear,TOther2,Z6,Hour,Z6Other2]/Availability Factor\
+		[Hour,Z6Other2])) ~~|
+Generation Factor Ideal Dispatch with New Projects[ForecastYear,Hour,Z6Other3]=
+	IF THEN ELSE(Ideal Dispatch with New Capacity[ForecastYear,TOther3,Z6,Hour,Z6Other3]\
+		=0, 0,
+	Ideal Dispatch with New Capacity[ForecastYear,TOther3,Z6,Hour,Z6Other3]
+	/
+	(Generation with New Projects[ForecastYear,TOther3,Z6,Hour,Z6Other3]/Availability Factor\
+		[Hour,Z6Other3]))
+	~	Dmnl
+	~		|
+
+BESS Discharging Hour[ForecastYear,Hour,PVBESSOp1]=
+	IF THEN ELSE(Residual demand Hour Ranking[ForecastYear,Hour]<5 , Availability Factor\
+		[Hour,PVBESSOp1], 0 ) ~~|
+BESS Discharging Hour[ForecastYear,Hour,PVBESSOp2]=
+	IF THEN ELSE(Residual demand Hour Ranking[ForecastYear,Hour]>12, Availability Factor\
+		[Hour,PVBESSOp2], 0 )
+	~	Dmnl
+	~		|
+
+Residual demand Hour Ranking[ForecastYear,Hour]=
+	VECTOR RANK(Residual Demand[ForecastYear,Hour], 0 )
+	~	Dmnl
+	~		|
+
+NPV Indicator[ZTech]=
+	Discounted Annual Income[ZTech]+Discounted Annual Variable Cost[ZTech]+Discounted capital cost\
+		[ZTech]+Discounted fixed cost[ZTech]
+	~	USD
+	~		|
+
+Discounted Annual Variable Cost[ZTech]=
+	IF THEN ELSE(
+	  Generation Discount Rate[ZTech] = 0,
+	  0,
+	  
+	  IF THEN ELSE(
+	    (Accumulated Generation Delays[ZTech] / Months per year) <= 1,
+	
+	    ((- Total Annual Variable Cost[f0,ZTech]) / Generation Discount Rate[ZTech]) * 
+	    (1 - (1 / (1 + Generation Discount Rate[ZTech])^2)) / 
+	    (1 + Generation Discount Rate[ZTech])^((Construction time by tech[ZTech] + Generation License Delay\
+		[ZTech]) / Months per year
+	)
+	    
+	    +
+	    ((- Total Annual Variable Cost[f3,ZTech]) / Generation Discount Rate[ZTech]) * 
+	    (1 - (1 / (1 + Generation Discount Rate[ZTech])^2)) / 
+	    (1 + Generation Discount Rate[ZTech])^(2 + (Construction time by tech[ZTech] + Generation License Delay\
+		[ZTech]) / Months per year
+	)
+	    
+	    +
+	    (( - Total Annual Variable Cost[f5,ZTech]) / Generation Discount Rate[ZTech]) * 
+	    (1 - (1 / (1 + Generation Discount Rate[ZTech])^2)) / 
+	    (1 + Generation Discount Rate[ZTech])^(4 + (Construction time by tech[ZTech] + Generation License Delay\
+		[ZTech]) / Months per year
+	)
+	    
+	    +
+	    (( - Total Annual Variable Cost[f7,ZTech]) / Generation Discount Rate[ZTech]) * 
+	    (1 - (1 / (1 + Generation Discount Rate[ZTech])^19)) / 
+	    (1 + Generation Discount Rate[ZTech])^(6 + (Construction time by tech[ZTech] + Generation License Delay\
+		[ZTech]) / Months per year
+	),
+	
+	  IF THEN ELSE(
+	    (Accumulated Generation Delays[ZTech] / Months per year) <= 3,
+	
+	    (( - Total Annual Variable Cost[f3,ZTech]) / Generation Discount Rate[ZTech]) * 
+	    (1 - (1 / (1 + Generation Discount Rate[ZTech])^2)) / 
+	    (1 + Generation Discount Rate[ZTech])^((Construction time by tech[ZTech] + Generation License Delay\
+		[ZTech]) / Months per year
+	)
+	    
+	    +
+	    (( - Total Annual Variable Cost[f5,ZTech]) / Generation Discount Rate[ZTech]) * 
+	    (1 - (1 / (1 + Generation Discount Rate[ZTech])^2)) / 
+	    (1 + Generation Discount Rate[ZTech])^(2 + (Construction time by tech[ZTech] + Generation License Delay\
+		[ZTech]) / Months per year
+	)
+	    
+	    +
+	    ((- Total Annual Variable Cost[f7,ZTech]) / Generation Discount Rate[ZTech]) * 
+	    (1 - (1 / (1 + Generation Discount Rate[ZTech])^21)) / 
+	    (1 + Generation Discount Rate[ZTech])^(4 + (Construction time by tech[ZTech] + Generation License Delay\
+		[ZTech]) / Months per year
+	),
+	
+	  IF THEN ELSE(
+	    (Accumulated Generation Delays[ZTech] / Months per year) <= 5,
+	
+	    ((- Total Annual Variable Cost[f5,ZTech]) / Generation Discount Rate[ZTech]) * 
+	    (1 - (1 / (1 + Generation Discount Rate[ZTech])^2)) / 
+	    (1 + Generation Discount Rate[ZTech])^((Construction time by tech[ZTech] + Generation License Delay\
+		[ZTech]) / Months per year
+	)
+	    
+	    +
+	    (( - Total Annual Variable Cost[f7,ZTech]) / Generation Discount Rate[ZTech]) * 
+	    (1 - (1 / (1 + Generation Discount Rate[ZTech])^23)) / 
+	    (1 + Generation Discount Rate[ZTech])^(2 + (Construction time by tech[ZTech] + Generation License Delay\
+		[ZTech]) / Months per year
+	),
+	
+	    (( - Total Annual Variable Cost[f7,ZTech]) / Generation Discount Rate[ZTech]) * 
+	    (1 - (1 / (1 + Generation Discount Rate[ZTech])^25)) / 
+	    (1 + Generation Discount Rate[ZTech])^((Construction time by tech[ZTech] + Generation License Delay\
+		[ZTech]) / Months per year
+	)
+	  )
+	  )
+	  )
+	)
+	+IF THEN ELSE(  Generation Discount Rate[ZTech] = 0,
+	  0 ,IF THEN ELSE(Accumulated Generation Delays[ZTech]=0, Total Annual Variable Cost\
+		[f0,ZTech],0))
+	~	USD
+	~		|
+
+Positive NPV Technologies[ZTech]=
+	IF THEN ELSE(NPV Indicator[ZTech]<=0, 0 , NPV Indicator[ZTech])
+	~	USD
+	~		|
+
+Discounted Annual Income[ZTech]=
+	IF THEN ELSE(
+	  Generation Discount Rate[ZTech] = 0,
+	  0,
+	  
+	  IF THEN ELSE(
+	    (Accumulated Generation Delays[ZTech] / Months per year) <= 1,
+	
+	    ((Total Annual Income[f0,ZTech]) / Generation Discount Rate[ZTech]) * 
+	    (1 - (1 / (1 + Generation Discount Rate[ZTech])^2)) / 
+	    (1 + Generation Discount Rate[ZTech])^((Construction time by tech[ZTech] + Generation License Delay\
+		[ZTech]) / Months per year
+	)
+	    
+	    +
+	    ((Total Annual Income[f3,ZTech]) / Generation Discount Rate[ZTech]) * 
+	    (1 - (1 / (1 + Generation Discount Rate[ZTech])^2)) / 
+	    (1 + Generation Discount Rate[ZTech])^(2 + (Construction time by tech[ZTech] + Generation License Delay\
+		[ZTech]) / Months per year
+	)
+	    
+	    +
+	    ((Total Annual Income[f5,ZTech]) / Generation Discount Rate[ZTech]) * 
+	    (1 - (1 / (1 + Generation Discount Rate[ZTech])^2)) / 
+	    (1 + Generation Discount Rate[ZTech])^(4 + (Construction time by tech[ZTech] + Generation License Delay\
+		[ZTech]) / Months per year
+	)
+	    
+	    +
+	    ((Total Annual Income[f7,ZTech]) / Generation Discount Rate[ZTech]) * 
+	    (1 - (1 / (1 + Generation Discount Rate[ZTech])^19)) / 
+	    (1 + Generation Discount Rate[ZTech])^(6 + (Construction time by tech[ZTech] + Generation License Delay\
+		[ZTech]) / Months per year
+	),
+	
+	  IF THEN ELSE(
+	    (Accumulated Generation Delays[ZTech] / Months per year) <= 3,
+	
+	    ((Total Annual Income[f3,ZTech]) / Generation Discount Rate[ZTech]) * 
+	    (1 - (1 / (1 + Generation Discount Rate[ZTech])^2)) / 
+	    (1 + Generation Discount Rate[ZTech])^((Construction time by tech[ZTech] + Generation License Delay\
+		[ZTech]) / Months per year
+	)
+	    
+	    +
+	    ((Total Annual Income[f5,ZTech] ) / Generation Discount Rate[ZTech]) * 
+	    (1 - (1 / (1 + Generation Discount Rate[ZTech])^2)) / 
+	    (1 + Generation Discount Rate[ZTech])^(2 + (Construction time by tech[ZTech] + Generation License Delay\
+		[ZTech]) / Months per year
+	)
+	    
+	    +
+	    ((Total Annual Income[f7,ZTech] ) / Generation Discount Rate[ZTech]) * 
+	    (1 - (1 / (1 + Generation Discount Rate[ZTech])^21)) / 
+	    (1 + Generation Discount Rate[ZTech])^(4 + (Construction time by tech[ZTech] + Generation License Delay\
+		[ZTech]) / Months per year
+	),
+	
+	  IF THEN ELSE(
+	    (Accumulated Generation Delays[ZTech] / Months per year) <= 5,
+	
+	    ((Total Annual Income[f5,ZTech]) / Generation Discount Rate[ZTech]) * 
+	    (1 - (1 / (1 + Generation Discount Rate[ZTech])^2)) / 
+	    (1 + Generation Discount Rate[ZTech])^((Construction time by tech[ZTech] + Generation License Delay\
+		[ZTech]) / Months per year
+	)
+	    
+	    +
+	    ((Total Annual Income[f7,ZTech] ) / Generation Discount Rate[ZTech]) * 
+	    (1 - (1 / (1 + Generation Discount Rate[ZTech])^23)) / 
+	    (1 + Generation Discount Rate[ZTech])^(2 + (Construction time by tech[ZTech] + Generation License Delay\
+		[ZTech]) / Months per year
+	),
+	
+	    ((Total Annual Income[f7,ZTech]) / Generation Discount Rate[ZTech]) * 
+	    (1 - (1 / (1 + Generation Discount Rate[ZTech])^25)) / 
+	    (1 + Generation Discount Rate[ZTech])^((Construction time by tech[ZTech] + Generation License Delay\
+		[ZTech]) / Months per year
+	)
+	  )
+	  )
+	  )
+	)+IF THEN ELSE(  Generation Discount Rate[ZTech] = 0,
+	  0 ,IF THEN ELSE(Accumulated Generation Delays[ZTech]=0, Total Annual Income[f0,ZTech\
+		],0))
+	~	USD
+	~	IF THEN ELSE(
+		  Generation Discount Rate[ZTech] = 0,
+		  0,
+		  
+		  IF THEN ELSE(
+		    Accumulated Generation Delays[ZTech] < Min accumulated delays,
+		    
+		    - Discounted capital cost[ZTech]
+		    - Discounted fixed cost[ZTech]
+		    - (
+		        ((Total Annual Variable Cost[f0,ZTech] / Generation Discount Rate[ZTech]) *
+		          (1 - (1 / ((1 + Generation Discount Rate[ZTech])^3)))) +
+		        ((Total Annual Variable Cost[f5,ZTech] / Generation Discount Rate[ZTech]) *
+		          (1 - (1 / ((1 + Generation Discount Rate[ZTech])^4))) /
+		          ((1 + Generation Discount Rate[ZTech])^3)) +
+		        ((Total Annual Variable Cost[f7,ZTech] / Generation Discount Rate[ZTech]) *
+		          (1 - (1 / ((1 + Generation Discount Rate[ZTech])^
+		             ((Generation Lifetime by Tech[ZTech] / Months per year) - 7)))) /
+		          ((1 + Generation Discount Rate[ZTech])^7))
+		      ),
+		  
+		    IF THEN ELSE(
+		      Accumulated Generation Delays[ZTech] < Mean accumulated delays,
+		      
+		      - Discounted capital cost[ZTech]
+		      - Discounted fixed cost[ZTech]
+		      - (
+		          ((Total Annual Variable Cost[f5,ZTech] / Generation Discount Rate[ZTech]) *
+		            (1 - (1 / ((1 + Generation Discount Rate[ZTech])^4)))) +
+		          ((Total Annual Variable Cost[f7,ZTech] / Generation Discount Rate[ZTech]) *
+		            (1 - (1 / ((1 + Generation Discount Rate[ZTech])^
+		               ((Generation Lifetime by Tech[ZTech] / Months per year) - 7)))) /
+		            ((1 + Generation Discount Rate[ZTech])^7))
+		        ),
+		  
+		      - Discounted capital cost[ZTech]
+		      - Discounted fixed cost[ZTech]
+		      - ((Total Annual Variable Cost[f7,ZTech] / Generation Discount Rate[ZTech]) *
+		          (1 - (1 / ((1 + Generation Discount Rate[ZTech])^
+		            (Generation Lifetime by Tech[ZTech] / Months per year)))))
+		    )
+		  )
+		)
+	|
+
+Months per year=
+	12
+	~	Months
+	~		|
+
+Discounted capital cost[ZTech]=
+	IF THEN ELSE(
+	  Capital Generation Cost[ZTech] = 0 :OR: Generation Discount Rate[ZTech] = 0:OR:Construction time by tech\
+		[ZTech]=0,
+	  0,
+	  -((Size of Investment[ZTech] * Capital Generation Cost[ZTech]) / 
+	     (Construction time by tech[ZTech]/Months per year)) 
+	
+	  * ((1 - (1 / (1 + Generation Discount Rate[ZTech]) ^ 
+	                (Construction time by tech[ZTech]/Months per year))) 
+	     / Generation Discount Rate[ZTech])
+	
+	  * (1 / (1 + Generation Discount Rate[ZTech]) ^ 
+	        (Generation License Delay[ZTech]/Months per year))
+	)+IF THEN ELSE(
+	  Capital Generation Cost[ZTech] = 0 :OR: Generation Discount Rate[ZTech] = 0,
+	  0,IF THEN ELSE( Construction time by tech[ZTech]=0,-Size of Investment[ZTech] * Capital Generation Cost\
+		[ZTech],0))
+	~	USD
+	~	  
+		
+		
+		
+		    - ((Total Annual Variable Cost[ForecastYear,ZTech] / Generation Discount \
+		Rate[ZTech]) 
+		        * (1 - (1 / ((1 + Generation Discount Rate[ZTech]) ^ (Generation Lifetime by \
+		Tech[ZTech] + Accumulated Generation Delays[ZTech])))) 
+		        / ((1 + Generation Discount Rate[ZTech]) ^ Accumulated Generation \
+		Delays[ZTech]))
+		
+		    + ((Total Annual Income[ForecastYear,ZTech]) / Generation Discount Rate[ZTech]) 
+		        * (1 - 1 / ((1 + Generation Discount Rate[ZTech]) ^ (Generation Lifetime by \
+		Tech[ZTech] + Accumulated Generation Delays[ZTech])))
+		        / ((1 + Generation Discount Rate[ZTech]) ^ Accumulated Generation \
+		Delays[ZTech])
+		)
+	|
+
+Discounted fixed cost[ZTech]=
+	IF THEN ELSE(
+	  Fixed Generation Cost[ZTech] = 0 :OR: Generation Discount Rate[ZTech] = 0, 
+	  0,
+	
+	-(((Fixed Generation Cost[ZTech] * Size of Investment[ZTech]) 
+	   / Generation Discount Rate[ZTech]) 
+	   * (1 - (1 / ((1 + Generation Discount Rate[ZTech]) ^ 
+	                (Generation Lifetime by Tech[ZTech]/Months per year)))) 
+	   * (1 / ((1 + Generation Discount Rate[ZTech]) ^ 
+	           (Accumulated Generation Delays[ZTech]/Months per year))))
+	)+IF THEN ELSE(
+	  Fixed Generation Cost[ZTech] = 0 :OR: Generation Discount Rate[ZTech] = 0,
+	  0,IF THEN ELSE( Construction time by tech[ZTech]=0,-Fixed Generation Cost[ZTech] *\
+		 Size of Investment[ZTech],0))
+	~	USD
+	~		|
+
+Total Annual Variable Cost[ForecastYear,ZTech] :EXCEPT:   [ForecastYear,Thermo1]=
+	
+	(Operation Cost[ZTech]+Fuel Cost[ZTech])*Expected daily generation[ForecastYear,ZTech\
+		]*Days per year ~~|
+Total Annual Variable Cost[ForecastYear,Thermo1]=
+	(Operation Cost[Thermo1]+Fuel Cost[Thermo1])*Expected daily generation[ForecastYear,\
+		Thermo1]*Days per year*(1+STEP(1 , 60 ))
+	~	USD
+	~		|
+
+Expected daily generation[ForecastYear,ZTech]=
+	Sum(Expected Hourly Generation[ForecastYear,ZTech,Hour!])
+	~	MWh
+	~		|
+
+Ideal Dispatch with New Capacity[ForecastYear,TechDER,Zone,Hour,Z1Tech]=
+	ALLOCATE BY PRIORITY(Generation with New Projects[ForecastYear,TechDER,Zone,Hour,Z1Tech\
+		], Dispatch Priority[Z1Tech], ELMCOUNT(Z1Tech),Width
+	,Residual Demand by zone[f0,Hour,Z1]) ~~|
+Ideal Dispatch with New Capacity[ForecastYear,TechDER,Zone,Hour,Z2Tech]=
+	ALLOCATE BY PRIORITY(Generation with New Projects[ForecastYear,TechDER,Zone,Hour,Z2Tech\
+		], Dispatch Priority[Z2Tech], ELMCOUNT(Z2Tech),Width
+	,Residual Demand by zone[f0,Hour,Z2]) ~~|
+Ideal Dispatch with New Capacity[ForecastYear,TechDER,Zone,Hour,Z3Tech]=
+	ALLOCATE BY PRIORITY(Generation with New Projects[ForecastYear,TechDER,Zone,Hour,Z3Tech\
+		], Dispatch Priority[Z3Tech], ELMCOUNT(Z3Tech),Width
+	,Residual Demand by zone[f0,Hour,Z3]) ~~|
+Ideal Dispatch with New Capacity[ForecastYear,TechDER,Zone,Hour,Z4Tech]=
+	ALLOCATE BY PRIORITY(Generation with New Projects[ForecastYear,TechDER,Zone,Hour,Z4Tech\
+		], Dispatch Priority[Z4Tech], ELMCOUNT(Z4Tech),Width
+	,Residual Demand by zone[f0,Hour,Z4]) ~~|
+Ideal Dispatch with New Capacity[ForecastYear,TechDER,Zone,Hour,Z5Tech]=
+	ALLOCATE BY PRIORITY(Generation with New Projects[ForecastYear,TechDER,Zone,Hour,Z5Tech\
+		], Dispatch Priority[Z5Tech], ELMCOUNT(Z5Tech),Width
+	,Residual Demand by zone[f0,Hour,Z5]) ~~|
+Ideal Dispatch with New Capacity[ForecastYear,TechDER,Zone,Hour,Z6Tech]=
+	ALLOCATE BY PRIORITY(Generation with New Projects[ForecastYear,TechDER,Zone,Hour,Z6Tech\
+		], Dispatch Priority[Z6Tech], ELMCOUNT(Z6Tech),Width
+	,Residual Demand by zone[f0,Hour,Z6])
+	~	MWh
+	~		|
+
+ENFICC for Reliability charge[ZTech]=
+	GET XLS CONSTANTS('?Datos', 'Gen Investment parameters', 'C24')
+	~	USD/MWh
+	~		|
+
+Reliability charge=
+	30
+	~	USD/MWh
+	~	20
+	|
+
+Hours per Day=
+	24
+	~	Dmnl
+	~		|
+
+Size of Investment by Array[TBiomass,Z1,ZTech]=
+	GET XLS CONSTANTS('?Datos', 'Generation Project Size', 'B2') ~~|
+Size of Investment by Array[TWindOnS,Z1,ZTech]=
+	GET XLS CONSTANTS('?Datos', 'Generation Project Size', 'B3') ~~|
+Size of Investment by Array[TWindOffS,Z1,ZTech]=
+	GET XLS CONSTANTS('?Datos', 'Generation Project Size', 'B4') ~~|
+Size of Investment by Array[TPV,Z1,ZTech]=
+	GET XLS CONSTANTS('?Datos', 'Generation Project Size', 'B5') ~~|
+Size of Investment by Array[THRoR,Z1,ZTech]=
+	GET XLS CONSTANTS('?Datos', 'Generation Project Size', 'B6') ~~|
+Size of Investment by Array[THydroDam,Z1,ZTech]=
+	GET XLS CONSTANTS('?Datos', 'Generation Project Size', 'B7') ~~|
+Size of Investment by Array[TThermo1,Z1,ZTech]=
+	GET XLS CONSTANTS('?Datos', 'Generation Project Size', 'B8') ~~|
+Size of Investment by Array[TThermo2,Z1,ZTech]=
+	GET XLS CONSTANTS('?Datos', 'Generation Project Size', 'B9') ~~|
+Size of Investment by Array[TGeothermal,Z1,ZTech]=
+	GET XLS CONSTANTS('?Datos', 'Generation Project Size', 'B10') ~~|
+Size of Investment by Array[TPVBESSOp1,Z1,ZTech]=
+	GET XLS CONSTANTS('?Datos', 'Generation Project Size', 'B11') ~~|
+Size of Investment by Array[TPVBESSOp2,Z1,ZTech]=
+	GET XLS CONSTANTS('?Datos', 'Generation Project Size', 'B12') ~~|
+Size of Investment by Array[TOther1,Z1,ZTech]=
+	GET XLS CONSTANTS('?Datos', 'Generation Project Size', 'B13') ~~|
+Size of Investment by Array[TOther2,Z1,ZTech]=
+	GET XLS CONSTANTS('?Datos', 'Generation Project Size', 'B14') ~~|
+Size of Investment by Array[TOther3,Z1,ZTech]=
+	GET XLS CONSTANTS('?Datos', 'Generation Project Size', 'B15') ~~|
+Size of Investment by Array[TBiomass,Z2,ZTech]=
+	GET XLS CONSTANTS('?Datos', 'Generation Project Size', 'B16') ~~|
+Size of Investment by Array[TWindOnS,Z2,ZTech]=
+	GET XLS CONSTANTS('?Datos', 'Generation Project Size', 'B17') ~~|
+Size of Investment by Array[TWindOffS,Z2,ZTech]=
+	GET XLS CONSTANTS('?Datos', 'Generation Project Size', 'B18') ~~|
+Size of Investment by Array[TPV,Z2,ZTech]=
+	GET XLS CONSTANTS('?Datos', 'Generation Project Size', 'B19') ~~|
+Size of Investment by Array[THRoR,Z2,ZTech]=
+	GET XLS CONSTANTS('?Datos', 'Generation Project Size', 'B20') ~~|
+Size of Investment by Array[THydroDam,Z2,ZTech]=
+	GET XLS CONSTANTS('?Datos', 'Generation Project Size', 'B21') ~~|
+Size of Investment by Array[TThermo1,Z2,ZTech]=
+	GET XLS CONSTANTS('?Datos', 'Generation Project Size', 'B22') ~~|
+Size of Investment by Array[TThermo2,Z2,ZTech]=
+	GET XLS CONSTANTS('?Datos', 'Generation Project Size', 'B23') ~~|
+Size of Investment by Array[TGeothermal,Z2,ZTech]=
+	GET XLS CONSTANTS('?Datos', 'Generation Project Size', 'B24') ~~|
+Size of Investment by Array[TPVBESSOp1,Z2,ZTech]=
+	GET XLS CONSTANTS('?Datos', 'Generation Project Size', 'B25') ~~|
+Size of Investment by Array[TPVBESSOp2,Z2,ZTech]=
+	GET XLS CONSTANTS('?Datos', 'Generation Project Size', 'B26') ~~|
+Size of Investment by Array[TOther1,Z2,ZTech]=
+	GET XLS CONSTANTS('?Datos', 'Generation Project Size', 'B27') ~~|
+Size of Investment by Array[TOther2,Z2,ZTech]=
+	GET XLS CONSTANTS('?Datos', 'Generation Project Size', 'B28') ~~|
+Size of Investment by Array[TOther3,Z2,ZTech]=
+	GET XLS CONSTANTS('?Datos', 'Generation Project Size', 'B29') ~~|
+Size of Investment by Array[TBiomass,Z3,ZTech]=
+	GET XLS CONSTANTS('?Datos', 'Generation Project Size', 'B30') ~~|
+Size of Investment by Array[TWindOnS,Z3,ZTech]=
+	GET XLS CONSTANTS('?Datos', 'Generation Project Size', 'B31') ~~|
+Size of Investment by Array[TWindOffS,Z3,ZTech]=
+	GET XLS CONSTANTS('?Datos', 'Generation Project Size', 'B32') ~~|
+Size of Investment by Array[TPV,Z3,ZTech]=
+	GET XLS CONSTANTS('?Datos', 'Generation Project Size', 'B33') ~~|
+Size of Investment by Array[THRoR,Z3,ZTech]=
+	GET XLS CONSTANTS('?Datos', 'Generation Project Size', 'B34') ~~|
+Size of Investment by Array[THydroDam,Z3,ZTech]=
+	GET XLS CONSTANTS('?Datos', 'Generation Project Size', 'B35') ~~|
+Size of Investment by Array[TThermo1,Z3,ZTech]=
+	GET XLS CONSTANTS('?Datos', 'Generation Project Size', 'B36') ~~|
+Size of Investment by Array[TThermo2,Z3,ZTech]=
+	GET XLS CONSTANTS('?Datos', 'Generation Project Size', 'B37') ~~|
+Size of Investment by Array[TGeothermal,Z3,ZTech]=
+	GET XLS CONSTANTS('?Datos', 'Generation Project Size', 'B38') ~~|
+Size of Investment by Array[TPVBESSOp1,Z3,ZTech]=
+	GET XLS CONSTANTS('?Datos', 'Generation Project Size', 'B39') ~~|
+Size of Investment by Array[TPVBESSOp2,Z3,ZTech]=
+	GET XLS CONSTANTS('?Datos', 'Generation Project Size', 'B40') ~~|
+Size of Investment by Array[TOther1,Z3,ZTech]=
+	GET XLS CONSTANTS('?Datos', 'Generation Project Size', 'B41') ~~|
+Size of Investment by Array[TOther2,Z3,ZTech]=
+	GET XLS CONSTANTS('?Datos', 'Generation Project Size', 'B42') ~~|
+Size of Investment by Array[TOther3,Z3,ZTech]=
+	GET XLS CONSTANTS('?Datos', 'Generation Project Size', 'B43') ~~|
+Size of Investment by Array[TBiomass,Z4,ZTech]=
+	GET XLS CONSTANTS('?Datos', 'Generation Project Size', 'B44') ~~|
+Size of Investment by Array[TWindOnS,Z4,ZTech]=
+	GET XLS CONSTANTS('?Datos', 'Generation Project Size', 'B45') ~~|
+Size of Investment by Array[TWindOffS,Z4,ZTech]=
+	GET XLS CONSTANTS('?Datos', 'Generation Project Size', 'B46') ~~|
+Size of Investment by Array[TPV,Z4,ZTech]=
+	GET XLS CONSTANTS('?Datos', 'Generation Project Size', 'B47') ~~|
+Size of Investment by Array[THRoR,Z4,ZTech]=
+	GET XLS CONSTANTS('?Datos', 'Generation Project Size', 'B48') ~~|
+Size of Investment by Array[THydroDam,Z4,ZTech]=
+	GET XLS CONSTANTS('?Datos', 'Generation Project Size', 'B49') ~~|
+Size of Investment by Array[TThermo1,Z4,ZTech]=
+	GET XLS CONSTANTS('?Datos', 'Generation Project Size', 'B50') ~~|
+Size of Investment by Array[TThermo2,Z4,ZTech]=
+	GET XLS CONSTANTS('?Datos', 'Generation Project Size', 'B51') ~~|
+Size of Investment by Array[TGeothermal,Z4,ZTech]=
+	GET XLS CONSTANTS('?Datos', 'Generation Project Size', 'B52') ~~|
+Size of Investment by Array[TPVBESSOp1,Z4,ZTech]=
+	GET XLS CONSTANTS('?Datos', 'Generation Project Size', 'B53') ~~|
+Size of Investment by Array[TPVBESSOp2,Z4,ZTech]=
+	GET XLS CONSTANTS('?Datos', 'Generation Project Size', 'B54') ~~|
+Size of Investment by Array[TOther1,Z4,ZTech]=
+	GET XLS CONSTANTS('?Datos', 'Generation Project Size', 'B55') ~~|
+Size of Investment by Array[TOther2,Z4,ZTech]=
+	GET XLS CONSTANTS('?Datos', 'Generation Project Size', 'B56') ~~|
+Size of Investment by Array[TOther3,Z4,ZTech]=
+	GET XLS CONSTANTS('?Datos', 'Generation Project Size', 'B57') ~~|
+Size of Investment by Array[TBiomass,Z5,ZTech]=
+	GET XLS CONSTANTS('?Datos', 'Generation Project Size', 'B58') ~~|
+Size of Investment by Array[TWindOnS,Z5,ZTech]=
+	GET XLS CONSTANTS('?Datos', 'Generation Project Size', 'B59') ~~|
+Size of Investment by Array[TWindOffS,Z5,ZTech]=
+	GET XLS CONSTANTS('?Datos', 'Generation Project Size', 'B60') ~~|
+Size of Investment by Array[TPV,Z5,ZTech]=
+	GET XLS CONSTANTS('?Datos', 'Generation Project Size', 'B61') ~~|
+Size of Investment by Array[THRoR,Z5,ZTech]=
+	GET XLS CONSTANTS('?Datos', 'Generation Project Size', 'B62') ~~|
+Size of Investment by Array[THydroDam,Z5,ZTech]=
+	GET XLS CONSTANTS('?Datos', 'Generation Project Size', 'B63') ~~|
+Size of Investment by Array[TThermo1,Z5,ZTech]=
+	GET XLS CONSTANTS('?Datos', 'Generation Project Size', 'B64') ~~|
+Size of Investment by Array[TThermo2,Z5,ZTech]=
+	GET XLS CONSTANTS('?Datos', 'Generation Project Size', 'B65') ~~|
+Size of Investment by Array[TGeothermal,Z5,ZTech]=
+	GET XLS CONSTANTS('?Datos', 'Generation Project Size', 'B66') ~~|
+Size of Investment by Array[TPVBESSOp1,Z5,ZTech]=
+	GET XLS CONSTANTS('?Datos', 'Generation Project Size', 'B67') ~~|
+Size of Investment by Array[TPVBESSOp2,Z5,ZTech]=
+	GET XLS CONSTANTS('?Datos', 'Generation Project Size', 'B68') ~~|
+Size of Investment by Array[TOther1,Z5,ZTech]=
+	GET XLS CONSTANTS('?Datos', 'Generation Project Size', 'B69') ~~|
+Size of Investment by Array[TOther2,Z5,ZTech]=
+	GET XLS CONSTANTS('?Datos', 'Generation Project Size', 'B70') ~~|
+Size of Investment by Array[TOther3,Z5,ZTech]=
+	GET XLS CONSTANTS('?Datos', 'Generation Project Size', 'B71') ~~|
+Size of Investment by Array[TBiomass,Z6,ZTech]=
+	GET XLS CONSTANTS('?Datos', 'Generation Project Size', 'B72') ~~|
+Size of Investment by Array[TWindOnS,Z6,ZTech]=
+	GET XLS CONSTANTS('?Datos', 'Generation Project Size', 'B73') ~~|
+Size of Investment by Array[TWindOffS,Z6,ZTech]=
+	GET XLS CONSTANTS('?Datos', 'Generation Project Size', 'B74') ~~|
+Size of Investment by Array[TPV,Z6,ZTech]=
+	GET XLS CONSTANTS('?Datos', 'Generation Project Size', 'B75') ~~|
+Size of Investment by Array[THRoR,Z6,ZTech]=
+	GET XLS CONSTANTS('?Datos', 'Generation Project Size', 'B76') ~~|
+Size of Investment by Array[THydroDam,Z6,ZTech]=
+	GET XLS CONSTANTS('?Datos', 'Generation Project Size', 'B77') ~~|
+Size of Investment by Array[TThermo1,Z6,ZTech]=
+	GET XLS CONSTANTS('?Datos', 'Generation Project Size', 'B78') ~~|
+Size of Investment by Array[TThermo2,Z6,ZTech]=
+	GET XLS CONSTANTS('?Datos', 'Generation Project Size', 'B79') ~~|
+Size of Investment by Array[TGeothermal,Z6,ZTech]=
+	GET XLS CONSTANTS('?Datos', 'Generation Project Size', 'B80') ~~|
+Size of Investment by Array[TPVBESSOp1,Z6,ZTech]=
+	GET XLS CONSTANTS('?Datos', 'Generation Project Size', 'B81') ~~|
+Size of Investment by Array[TPVBESSOp2,Z6,ZTech]=
+	GET XLS CONSTANTS('?Datos', 'Generation Project Size', 'B82') ~~|
+Size of Investment by Array[TOther1,Z6,ZTech]=
+	GET XLS CONSTANTS('?Datos', 'Generation Project Size', 'B83') ~~|
+Size of Investment by Array[TOther2,Z6,ZTech]=
+	GET XLS CONSTANTS('?Datos', 'Generation Project Size', 'B84') ~~|
+Size of Investment by Array[TOther3,Z6,ZTech]=
+	GET XLS CONSTANTS('?Datos', 'Generation Project Size', 'B85') ~~|
+Size of Investment by Array[DER,Zone,ZTech]=
+	0 ~~|
+Size of Investment by Array[DERBESS,Zone,ZTech]=
+	0
+	~	MW
+	~		|
+
+Days per year=
+	365.25
+	~	Dmnl
+	~		|
+
+Fuel Cost[ZTech]=
+	GET XLS CONSTANTS('?Datos', 'Gen Investment parameters', 'C21')
+	~	USD/MWh
+	~		|
+
+Operation Cost[ZTech]=
+	GET XLS CONSTANTS('?Datos', 'Gen Investment parameters', 'C20')
+	~	USD/MWh
+	~		|
+
+Fixed Generation Cost[ZTech]=
+	GET XLS CONSTANTS('?Datos', 'Gen Investment parameters', 'C19')
+	~	USD/MW
+	~		|
+
+Size of Investment[ZTech]=
+	GET XLS CONSTANTS('?Datos', 'Gen Investment parameters', 'C8')
+	~	MW
+	~		|
+
+Generation Discount Rate[ZTech]=
+	GET XLS CONSTANTS('?Datos', 'Gen Investment parameters', 'C23')
+	~	Dmnl
+	~		|
+
+Generation Lifetime by Tech[ZTech]=
+	GET XLS CONSTANTS('?Datos', 'Gen Investment parameters', 'C2')
+	~	Months
+	~		|
+
+Capital Generation Cost[ZTech]:INTERPOLATE:=
+	GET XLS DATA('?Datos', 'Gen Investment parameters','B', 'C62')
+	~	USD/MW
+	~		|
+
+Congested Dispatch by Zone[ForecastYear,Hour,Z1]=
+	Sum(Congested Dispatch[ForecastYear,Z1Tech!,Hour]) ~~|
+Congested Dispatch by Zone[ForecastYear,Hour,Z2]=
+	Sum(Congested Dispatch[ForecastYear,Z2Tech!,Hour]) ~~|
+Congested Dispatch by Zone[ForecastYear,Hour,Z3]=
+	Sum(Congested Dispatch[ForecastYear,Z3Tech!,Hour]) ~~|
+Congested Dispatch by Zone[ForecastYear,Hour,Z4]=
+	Sum(Congested Dispatch[ForecastYear,Z4Tech!,Hour]) ~~|
+Congested Dispatch by Zone[ForecastYear,Hour,Z5]=
+	Sum(Congested Dispatch[ForecastYear,Z5Tech!,Hour]) ~~|
+Congested Dispatch by Zone[ForecastYear,Hour,Z6]=
+	Sum(Congested Dispatch[ForecastYear,Z6Tech!,Hour])
+	~	MWh
+	~		|
+
+Planned Interconnection Capacity[Int]:INTERPOLATE:=
+	GET XLS DATA('?Datos', 'Transmission Expansion', 'B', 'C3')
+	~	MW/Month
+	~		|
+
+Planned Interconnection next 7 years[Int]:INTERPOLATE:=
+	GET XLS DATA('?Datos', 'Cumulative trans in 7 years', 'B', 'C3')
+	~	MW
+	~		|
+
+Planned Transmission Switch=
+	1
+	~	Dmnl
+	~		|
+
+Executed Interconnection km[Int]=
+	IF THEN ELSE(MODULO(Time, 1)=0,
+	Planned Transmission Switch*Planned Interconnection km[Int],
+	0)*(1/TIME STEP)
+	~	km/Month
+	~		|
+
+Executed Interconnection Capacity[Int]=
+	IF THEN ELSE(MODULO(Time, 1)=0,
+	Planned Transmission Switch*Planned Interconnection Capacity[Int],
+	0)*(1/TIME STEP)
+	~	MW/Month
+	~		|
+
+Planned Interconnection km[Int]:INTERPOLATE:=
+	GET XLS DATA('?Datos', 'Transmission Expansion', 'AI', 'AJ3')
+	~	km/Month
+	~		|
+
+Congested Dispatch Price[ForecastYear,Hour]= GAME (
+	0)
+	~	USD/MWh
+	~		|
+
+Used Potential:
+	Z1Biomass,Z1WindOnS,Z1WindOffS,Z1PV,Z1HydroDam,Z1Thermo1,Z1Thermo2,Z2Biomass,Z2PV,Z2HRoR\
+		,Z2HydroDam,Z2Thermo1,Z2Thermo2,Z3Biomass,Z3PV,Z3HRoR,Z3HydroDam,Z3Thermo1,Z3Thermo2\
+		,Z3Geothermal,Z4Biomass,Z4PV,Z4HRoR,Z4HydroDam,Z4Thermo1,Z4Thermo2,Z5Biomass,Z5PV,Z5HRoR\
+		,Z5HydroDam,Z5Thermo1,Z5Thermo2,Z5Geothermal
+	~	
+	~		|
+
+Max Interconnection Dispatch[ForecastYear, ZTech, Hour]= GAME (
+	0)
+	~	MWh
+	~		|
+
+Switch Dispatch=
+	GET XLS CONSTANTS('?Datos','General Parameters','B24' )
+	~	Dmnl
+	~		|
+
+Pair of Zones to Interconnect by Int[ForecastYear,Int]=
+	IF THEN ELSE(Additional Grid Need for Congestion[ForecastYear,Int]-(Initial Interconnection Capacity\
+		[Int]+Min Grid Capacity)>0, 1 , 0 )
+	~	Dmnl
+	~		|
+
+Max Interconnection Capacity[Int,ForecastYear]= GAME (
+	0)
+	~	MW
+	~		|
+
+Congested Dispatch[ForecastYear, ZTech, Hour]= GAME (
+	0)
+	~	MWh
+	~		|
+
+Total New Investment=
+	Sum(New Investment Decisions[ZTech!])
+	~	MW
+	~		|
+
+Total Potential=
+	Sum(Potential Generation Expansion[ZTech!])
+	~	MW
+	~		|
+
+Initial Transmission Factor for Demand by Zone[Zone]=
+	Initial Transmission for Demand*Fraction of Demand by zone and month[f0,Zone]
+	~	km
+	~		|
+
+Others:
+	Z1Other1,Z2Other1,Z3Other1,Z4Other1,Z5Other1,Z6Other1,
+	Z1Other2,Z2Other2,Z3Other2,Z4Other2,Z5Other2,Z6Other2,
+	Z1Other3,Z2Other3,Z3Other3,Z4Other3,Z5Other3,Z6Other3
+	~	
+	~		|
+
+All:
+	Z1Biomass,Z2Biomass,Z3Biomass,Z4Biomass,Z5Biomass,Z6Biomass,
+	Z1WindOnS,Z2WindOnS,Z3WindOnS,Z4WindOnS,Z5WindOnS,Z6WindOnS,
+	Z1WindOffS,Z2WindOffS,Z3WindOffS,Z4WindOffS,Z5WindOffS,Z6WindOffS,
+	Z1PV,Z2PV,Z3PV,Z4PV,Z5PV,Z6PV,
+	Z1HRoR,Z2HRoR,Z3HRoR,Z4HRoR,Z5HRoR,Z6HRoR,
+	Z1HydroDam,Z2HydroDam,Z3HydroDam,Z4HydroDam,Z5HydroDam,Z6HydroDam, 
+	Z1Geothermal, Z2Geothermal, Z3Geothermal, Z4Geothermal, Z5Geothermal, Z6Geothermal,
+	Z1PVBESSOp1,Z2PVBESSOp1,Z3PVBESSOp1,Z4PVBESSOp1,Z5PVBESSOp1,Z6PVBESSOp1,
+	Z1PVBESSOp2,Z2PVBESSOp2,Z3PVBESSOp2,Z4PVBESSOp2,Z5PVBESSOp2,Z6PVBESSOp2,
+	Z1Thermo1,Z2Thermo1,Z3Thermo1,Z4Thermo1,Z5Thermo1,Z6Thermo1,
+	Z1Thermo2,Z2Thermo2,Z3Thermo2,Z4Thermo2,Z5Thermo2,Z6Thermo2
+	~	
+	~		|
+
+Capacity Margin[ForecastYear]=
+	(
+	(Total Generation Capacity*1000)
+	-
+	National Peak Demand[ForecastYear]
+	)/
+	National Peak Demand[ForecastYear]
+	~	1
+	~		|
+
+National Peak Demand[ForecastYear]=
+	VMAX(National demand[ForecastYear,Hour!])
+	~	MWh
+	~		|
+
+Price Most Expensive Thermo=
+	Max(
+	Max(
+	VMAX(Offer Price[Thermo1!]),
+	VMAX(Offer Price[Thermo2!])),
+	Max(
+	VMAX(Offer Price[Biomass!]),
+	VMAX(Offer Price[Geothermal!]))
+	)
+	~	USD/MWh
+	~		|
+
+Executed Planned Generation Delay 1 month[ZTech]= DELAY FIXED (
+	Executed Planned Generation[ZTech] , 1 , 0)
+	~	MW/Month
+	~		|
+
+Expected Generation Capacity[f0, ZTech]=
+	Generation Capacity Adjusted[ZTech] ~~|
+Expected Generation Capacity[f1,ZTech]=
+	Generation Capacity ready to operate[ZTech]
+	+Generation Capacity Adjusted[ZTech] ~~|
+Expected Generation Capacity[f3,ZTech]=
+	Generation Capacity under Construction[ZTech]
+	+Generation Capacity ready to operate[ZTech]
+	+Planned Generation next 3 years[ZTech]
+	+Generation Capacity Adjusted[ZTech] ~~|
+Expected Generation Capacity[f5,ZTech]=
+	Visible projects in licensing*Generation Capacity in licensing process[ZTech]
+	+Generation Capacity under Construction[ZTech]
+	+Generation Capacity ready to operate[ZTech]
+	+Planned Generation next 5 years[ZTech]
+	+Generation Capacity Adjusted[ZTech] ~~|
+Expected Generation Capacity[f7,ZTech]=
+	Decided Generation Investment[ZTech]
+	+Visible projects in licensing*Generation Capacity in licensing process[ZTech]
+	+Generation Capacity under Construction[ZTech]
+	+Generation Capacity ready to operate[ZTech]
+	+Planned Generation next 7 years[ZTech]
+	+Generation Capacity Adjusted[ZTech] ~~|
+Expected Generation Capacity[f9,ZTech]=
+	Decided Generation Investment[ZTech]
+	+Visible projects in licensing*Generation Capacity in licensing process[ZTech]
+	+Generation Capacity under Construction[ZTech]
+	+Generation Capacity ready to operate[ZTech]
+	+Planned Generation next 9 years[ZTech]
+	+Generation Capacity Adjusted[ZTech]+Initial Potential Generation Expansion[ZTech]*0.1
+	~	MW
+	~	IF THEN ELSE(License Delay[ZTech]+Construction time by tech[ZTech]<=5 , 
+		       Decided investment[ZTech]+Projects in licensing process[ZTech]+Capacity under \
+		Construction[ZTech], 
+		       Capacity under Construction[ZTech] ) 
+		Generation Capacity[ZTech]+Capacity ready to operate[ZTech]
+		
+		+Planned Generation next 5 years[ZTech]
+		+Generation Capacity[ZTech]
+	|
+
+Long Term Generation Plans[f0,ZTech]=
+	0 ~~|
+Long Term Generation Plans[f1,ZTech]=
+	0 ~~|
+Long Term Generation Plans[f3,ZTech]=
+	Planned Generation next 3 years[ZTech] ~~|
+Long Term Generation Plans[f5,ZTech]=
+	Planned Generation next 5 years[ZTech] ~~|
+Long Term Generation Plans[f7,ZTech]=
+	Planned Generation next 7 years[ZTech] ~~|
+Long Term Generation Plans[f9,ZTech]=
+	Planned Generation next 9 years[ZTech]
+	~	MW
+	~		|
+
+Long Term Generation Plans Delayed[ForecastYear,ZTech]= DELAY FIXED (
+	Long Term Generation Plans[ForecastYear,ZTech],1,0)
+	~	MW
+	~		|
+
+Planned Generation Forecast[ForecastYear,ZTech]=
+	IF THEN ELSE( MODULO( Time , 1 )=0 ,  1, 0)*
+	 IF THEN ELSE( Time<1 , Long Term Generation Plans[ForecastYear,ZTech] , 
+	  IF THEN ELSE( Long Term Generation Plans[ForecastYear,ZTech]=0 , 0 ,
+	   IF THEN ELSE( Long Term Generation Plans[ForecastYear,ZTech]=Long Term Generation Plans Delayed\
+		[ForecastYear,ZTech] , 0,
+	    IF THEN ELSE( Long Term Generation Plans[ForecastYear,ZTech]>Long Term Generation Plans Delayed\
+		[ForecastYear,ZTech] ,Long Term Generation Plans[ForecastYear,ZTech]-Long Term Generation Plans Delayed\
+		[ForecastYear,ZTech] +Executed Planned Generation Delay 1 month[ZTech]*TIME STEP ,
+	    IF THEN ELSE( Long Term Generation Plans[ForecastYear,ZTech]<Long Term Generation Plans Delayed\
+		[ForecastYear,ZTech], Long Term Generation Plans[ForecastYear,ZTech]-Long Term Generation Plans Delayed\
+		[ForecastYear,ZTech] +Executed Planned Generation Delay 1 month[ZTech]*TIME STEP, 0\
+		 )))))
+	~	MW
+	~	Planned Generation next 3 years[ZTech]-Planned Real In \
+		Time[ZTech]+(Planned Delay 1 month[ZTech]+Initial Planned \
+		Generation[ForecastYear,ZTech])*0
+	|
+
+Initial Planned Generation[f0, ZTech]=
+	0 ~~|
+Initial Planned Generation[f1,ZTech]=
+	0 ~~|
+Initial Planned Generation[f3, ZTech]=
+	GET XLS CONSTANTS('?Datos', 'Cumulative capacity in 3 years', 'C2') ~~|
+Initial Planned Generation[f5, ZTech]=
+	GET XLS CONSTANTS('?Datos', 'Cumulative capacity in 5 years', 'C2') ~~|
+Initial Planned Generation[f7, ZTech]=
+	GET XLS CONSTANTS('?Datos', 'Cumulative capacity in 7 years', 'C2') ~~|
+Initial Planned Generation[f9, ZTech]=
+	GET XLS CONSTANTS('?Datos', 'Cumulative capacity in 9 years', 'C2')
+	~	MW
+	~		|
+
+Planned Generation next 9 years[ZTech]:INTERPOLATE:=
+	GET XLS DATA('?Datos', 'Cumulative Capacity in 7 years', 'B', 'C2')
+	~	MW
+	~		|
+
+Total Expected Generation[ForecastYear]=
+	Sum(Expected Generation Capacity[ForecastYear,ZTech!])
+	~	MW
+	~		|
+
+Total Generation Expansion by Tech[ForecastYear]=
+	Sum(New Generation Expansion by Tech[ForecastYear,ZTech!])
+	~	MW
+	~		|
+
+Total Spillovers=
+	Sum(Spillovers[HydroDam!])
+	~	MWh/Month
+	~		|
+
+Planned Generation next 3 years[ZTech]:INTERPOLATE:=
+	GET XLS DATA('?Datos', 'Cumulative Capacity in 3 years', 'B', 'C2')
+	~	MW
+	~		|
+
+Total inflows=
+	Sum(Inflows[HydroDam!])
+	~	MWh/Month
+	~		|
+
+Planned Generation next 7 years[ ZTech]:INTERPOLATE:=
+	GET XLS DATA('?Datos', 'Cumulative Capacity in 7 years', 'B', 'C2')
+	~	MW
+	~		|
+
+Generation Forecasting Switch=
+	GET XLS CONSTANTS('?Datos', 'Gen Investment parameters', 'B9')
+	~	Dmnl
+	~		|
+
+Expansion Plan Delay TI[TrasmTech]=
+	GET XLS CONSTANTS('?Datos', 'Trans Investment parameters', 'E2')
+	~	Months
+	~		|
+
+Total Inactive Generation Capacity by Zone[Z1]=
+	Sum(Generation Capacity ready to operate[Z1Tech!]) ~~|
+Total Inactive Generation Capacity by Zone[Z2]=
+	Sum(Generation Capacity ready to operate[Z2Tech!]) ~~|
+Total Inactive Generation Capacity by Zone[Z3]=
+	Sum(Generation Capacity ready to operate[Z3Tech!]) ~~|
+Total Inactive Generation Capacity by Zone[Z4]=
+	Sum(Generation Capacity ready to operate[Z4Tech!]) ~~|
+Total Inactive Generation Capacity by Zone[Z5]=
+	Sum(Generation Capacity ready to operate[Z5Tech!]) ~~|
+Total Inactive Generation Capacity by Zone[Z6]=
+	Sum(Generation Capacity ready to operate[Z6Tech!])
+	~	MW
+	~		|
+
+Total Transmission for Demand Connection=
+	Sum(Transmission for Demand Connection[Zone!])
+	~	km
+	~		|
+
+Total New Allowed Capacity=
+	Sum(New Allowed Operating Capacity[Zone!])
+	~	MW
+	~		|
+
+Decided Generation Investment[ZTech]= INTEG (
+	New Investment Decisions[ZTech]-Withdrawal of Decided Generation[ZTech]-Start licensing in Generation\
+		[ZTech],
+		0)
+	~	MW
+	~		|
+
+New Operating Capacity[Z1Tech]=
+	IF THEN ELSE(Generation Capacity ready to operate[Z1Tech]=0
+	, 0, 
+	
+	
+	Min(Generation Capacity ready to operate[Z1Tech],
+	New Allowed Operating Capacity[Z1]*Generation Capacity ready to operate[Z1Tech]/Sum(\
+		Generation Capacity ready to operate[Z1Tech!]
+	)
+	)
+	) ~~|
+New Operating Capacity[Z2Tech]=
+	IF THEN ELSE(Generation Capacity ready to operate[Z2Tech]=0
+	, 0, 
+	
+	Min(Generation Capacity ready to operate[Z2Tech],
+	New Allowed Operating Capacity[Z2]*Generation Capacity ready to operate[Z2Tech]/Sum(\
+		Generation Capacity ready to operate[Z2Tech!]
+	)
+	)
+	) ~~|
+New Operating Capacity[Z3Tech]=
+	IF THEN ELSE(Generation Capacity ready to operate[Z3Tech]=0
+	, 0, 
+	
+	Min(Generation Capacity ready to operate[Z3Tech],
+	New Allowed Operating Capacity[Z3]*Generation Capacity ready to operate[Z3Tech]/Sum(\
+		Generation Capacity ready to operate[Z3Tech!]
+	)
+	)
+	) ~~|
+New Operating Capacity[Z4Tech]=
+	IF THEN ELSE(Generation Capacity ready to operate[Z4Tech]=0
+	, 0, 
+	
+	Min(Generation Capacity ready to operate[Z4Tech],
+	New Allowed Operating Capacity[Z4]*Generation Capacity ready to operate[Z4Tech]/Sum(\
+		Generation Capacity ready to operate[Z4Tech!]
+	)
+	)
+	) ~~|
+New Operating Capacity[Z5Tech]=
+	IF THEN ELSE(Generation Capacity ready to operate[Z5Tech]=0
+	, 0, 
+	
+	Min(Generation Capacity ready to operate[Z5Tech],
+	New Allowed Operating Capacity[Z5]*Generation Capacity ready to operate[Z5Tech]/Sum(\
+		Generation Capacity ready to operate[Z5Tech!]
+	)
+	)
+	) ~~|
+New Operating Capacity[Z6Tech]=
+	IF THEN ELSE(Generation Capacity ready to operate[Z6Tech]=0
+	, 0, 
+	
+	Min(Generation Capacity ready to operate[Z6Tech],
+	New Allowed Operating Capacity[Z6]*Generation Capacity ready to operate[Z6Tech]/Sum(\
+		Generation Capacity ready to operate[Z6Tech!]
+	)
+	)
+	)
+	~	MW/Month
+	~	IF THEN ELSE(New Allowed Operating Capacity[Z1]-Sum(Generation Capacity ready to \
+		operate[Z1Tech!])<0,
+		0,
+		Min(New Allowed Operating Capacity[Z1],Generation Capacity ready to operate[Z1Tech])
+		)
+		Max(Min(New Allowed Operating Capacity[Z1],Sum(Generation Capacity ready \
+		to operate[Z2Tech!])),0)
+	|
+
+Generation Licensing Withdrawal Rate[ZTech]=
+	GET XLS CONSTANTS('?Datos', 'Gen Investment parameters', 'C7')
+	~	Dmnl
+	~		|
+
+Actual Transmission Factor for Generation[Zone]=
+	IF THEN ELSE( Generation Capacity by Zone[Zone]=0 ,0 ,Transmission for Generation Connection\
+		[Zone]/Generation Capacity by Zone[Zone])
+	~	km/MW
+	~		|
+
+Withdrawal of Decided Generation[ZTech]=
+	Decided Generation Investment[ZTech]*Decided Generation Withdrawal Rate[ZTech]
+	~	MW/Month
+	~		|
+
+Withdrawal of Generation in licensing[ZTech]=
+	Generation Licensing Withdrawal Rate[ZTech]*Start licensing in Generation[ZTech]
+	~	MW/Month
+	~		|
+
+Other Transmission delays TI[TrasmTech]=
+	GET XLS CONSTANTS('?Datos', 'Trans Investment parameters', 'E7')
+	~	Months
+	~		|
+
+Transmission Construction Delay TI[TrasmTech]=
+	GET XLS CONSTANTS('?Datos', 'Trans Investment parameters', 'E6')
+	~	Months
+	~		|
+
+Capacity Allowed by Grid[Zone]=
+	IF THEN ELSE(Actual Transmission Factor for Generation[Zone]<=0.4, 
+	0 , 
+	Generation Capacity by Zone[Zone]*Actual Transmission Factor for Generation[Zone]/(Estimated Transmission Factor for Generation
+	[Z1PV]))
+	~	MW
+	~	Sum(Generation Capacity[ZTech!])*Transmission Factor for Generation \
+		Real/(Sum(Transmission Factor for Generation \
+		Theoretical[ZTech!])/ELMCOUNT(ZTech))
+	|
+
+Investor Selection Delay TI[TrasmTech]=
+	GET XLS CONSTANTS('?Datos', 'Trans Investment parameters', 'E4')
+	~	Months
+	~		|
+
+New Allowed Operating Capacity[Z1]=
+	Max(0,Capacity Allowed by Grid[Z1]-Sum(Generation Capacity[Z1Tech!])) ~~|
+New Allowed Operating Capacity[Z2]=
+	Max(0,Capacity Allowed by Grid[Z2]-Sum(Generation Capacity[Z2Tech!])) ~~|
+New Allowed Operating Capacity[Z3]=
+	Max(0,Capacity Allowed by Grid[Z3]-Sum(Generation Capacity[Z3Tech!])) ~~|
+New Allowed Operating Capacity[Z4]=
+	Max(0,Capacity Allowed by Grid[Z4]-Sum(Generation Capacity[Z4Tech!])) ~~|
+New Allowed Operating Capacity[Z5]=
+	Max(0,Capacity Allowed by Grid[Z5]-Sum(Generation Capacity[Z5Tech!])) ~~|
+New Allowed Operating Capacity[Z6]=
+	Max(0,Capacity Allowed by Grid[Z6]-Sum(Generation Capacity[Z6Tech!]))
+	~	MW
+	~		|
+
+Decided Generation Withdrawal Rate[ZTech]=
+	GET XLS CONSTANTS('?Datos', 'Gen Investment parameters', 'C6')
+	~	
+	~		|
+
+Generation Capacity in licensing process[ZTech]= INTEG (
+	Start licensing in Generation[ZTech]-Withdrawal of Generation in licensing[ZTech]-Start Construction in Generation\
+		[ZTech],
+		0)
+	~	MW
+	~		|
+
+Total Transmission for Generation Connection=
+	Sum(Transmission for Generation Connection[Zone!])
+	~	km
+	~		|
+
+Start licensing in Generation[ZTech]=
+	Decided Generation Investment[ZTech]*(1-Decided Generation Withdrawal Rate[ZTech])
+	~	MW/Month
+	~	IF THEN ELSE(MODULO(Time,1)=0,(Proposed investment projects[ZTech]/TIME \
+		STEP)*(1-Endogenous Profitability Generation Switch),0)*0
+	|
+
+Transmission License Delay TI[TrasmTech]=
+	GET XLS CONSTANTS('?Datos', 'Trans Investment parameters', 'E5')
+	~	Months
+	~		|
+
+Public Tender Delay TI=
+	GET XLS CONSTANTS('?Datos', 'Trans Investment parameters', 'E3')
+	~	Months
+	~		|
+
+Start Construction in Generation[ZTech]= DELAY MATERIAL (
+	 Start licensing in Generation[ZTech]*(1-Generation Licensing Withdrawal Rate[ZTech]\
+		), (Generation License Delay[ZTech]+Other Generation delays[ZTech])
+	, 0,0)
+	~	MW/Month
+	~		|
+
+Start licensing Transmission for Generation[Zone]= DELAY MATERIAL (
+	Start Investor Selection Transmission for Generation[Zone],Investor Selection Delay TG\
+		,0,0)
+	~	km/Month
+	~		|
+
+New approved Transmission for Generation projects[Zone]=
+	IF THEN ELSE(Expansion Plan Delay TG=0,
+	New proposed Transmission for Generation projects[Zone],
+	 IF THEN ELSE(MODULO(Time,Expansion Plan Delay TG)=0 , 
+	 Expansion Plan Development TG[Zone]/TIME STEP, 
+	 0 ))
+	~	km/Month
+	~		|
+
+Total inactive Generation Capacity=
+	Sum(Generation Capacity ready to operate[ZTech!])
+	~	MW
+	~		|
+
+Start Investor Selection Transmission for Generation[Zone]= DELAY MATERIAL (
+	 New approved Transmission for Generation projects[Zone],Public Tender Delay TG,0,0)
+	~	km/Month
+	~		|
+
+Expansion Plan Development TG[Zone]= INTEG (
+	New proposed Transmission for Generation projects[Zone]-New approved Transmission for Generation projects\
+		[Zone],
+		0)
+	~	km
+	~		|
+
+Investor Selection Process TG[Zone]= INTEG (
+	Start Investor Selection Transmission for Generation[Zone]-Start licensing Transmission for Generation\
+		[Zone],
+		0)
+	~	km
+	~		|
+
+Transmission Public Tender Preparation TG[Zone]= INTEG (
+	New approved Transmission for Generation projects[Zone]-Start Investor Selection Transmission for Generation\
+		[Zone],
+		0)
+	~	km
+	~		|
+
+Expansion Plan Delay TG=
+	GET XLS CONSTANTS('?Datos', 'Trans Investment parameters', 'C2')
+	~	Months
+	~		|
+
+Transmission in licensing process TG[Zone]= INTEG (
+	Start licensing Transmission for Generation[Zone]-Start Construction Transmission for Generation\
+		[Zone],
+		0)
+	~	km
+	~		|
+
+New Inoperative Capacity[ZTech]= DELAY MATERIAL (
+	 Start Construction in Generation[ZTech] ,
+	Generation Construction Delay[ZTech],
+	0,
+	0)
+	~	MW/Month
+	~		|
+
+Generation Capacity ready to operate[ZTech]= INTEG (
+	New Inoperative Capacity[ZTech]-New Operating Capacity[ZTech],
+		0)
+	~	MW
+	~		|
+
+New Transmission for Generation by Zone[ForecastYear,Z1]=
+	Sum(New Generation Expansion by Tech[ForecastYear,Z1Tech!])*(Sum(Estimated Transmission Factor for Generation\
+		[Z1Tech!])/ELMCOUNT( Z1Tech )) ~~|
+New Transmission for Generation by Zone[ForecastYear,Z2]=
+	Sum(New Generation Expansion by Tech[ForecastYear,Z2Tech!])*(Sum(Estimated Transmission Factor for Generation\
+		[Z2Tech!])/ELMCOUNT( Z2Tech )) ~~|
+New Transmission for Generation by Zone[ForecastYear,Z3]=
+	Sum(New Generation Expansion by Tech[ForecastYear,Z3Tech!])*(Sum(Estimated Transmission Factor for Generation\
+		[Z3Tech!])/ELMCOUNT( Z3Tech )) ~~|
+New Transmission for Generation by Zone[ForecastYear,Z4]=
+	Sum(New Generation Expansion by Tech[ForecastYear,Z4Tech!])*(Sum(Estimated Transmission Factor for Generation\
+		[Z4Tech!])/ELMCOUNT( Z4Tech )) ~~|
+New Transmission for Generation by Zone[ForecastYear,Z5]=
+	Sum(New Generation Expansion by Tech[ForecastYear,Z5Tech!])*(Sum(Estimated Transmission Factor for Generation\
+		[Z5Tech!])/ELMCOUNT( Z5Tech )) ~~|
+New Transmission for Generation by Zone[ForecastYear,Z6]=
+	Sum(New Generation Expansion by Tech[ForecastYear,Z6Tech!])*(Sum(Estimated Transmission Factor for Generation\
+		[Z6Tech!])/ELMCOUNT( Z6Tech ))
+	~	km/Month
+	~		|
+
+Generation Capacity under Construction[ZTech]= INTEG (
+	Start Construction in Generation[ZTech]-New Inoperative Capacity[ZTech],
+		0)
+	~	MW
+	~		|
+
+Generation Construction Delay[ZTech]=
+	Construction time by tech[ZTech] * Construction Delay Step
+	~	Months
+	~		|
+
+Other Transmission delays TG=
+	GET XLS CONSTANTS('?Datos', 'Trans Investment parameters', 'C7')
+	~	Months
+	~		|
+
+Transmission Construction Delay TG=
+	GET XLS CONSTANTS('?Datos', 'Trans Investment parameters', 'C6')
+	~	Months
+	~		|
+
+Retired Generation[ZTech]=
+	Min((Executed Planned Generation[ZTech]
+	    +New Inoperative Capacity[ZTech])
+	,0)
+	~	MW/Month
+	~		|
+
+Investor Selection Delay TG=
+	GET XLS CONSTANTS('?Datos', 'Trans Investment parameters', 'C4')
+	~	Months
+	~		|
+
+Public Tender Delay TG=
+	GET XLS CONSTANTS('?Datos', 'Trans Investment parameters', 'C3')
+	~	Months
+	~		|
+
+Transmission License Delay TG=
+	GET XLS CONSTANTS('?Datos', 'Trans Investment parameters', 'C5')
+	~	Months
+	~		|
+
+New Investment Decisions[ZTech]=
+	Min(
+	Desired Projects for Margin[ZTech],
+	Potential Generation Expansion[ZTech])
+	
+	*
+	(1-Other Generation Switch)
+	~	MW/Month
+	~	Min((IF THEN ELSE(MODULO(Time,1)=0,
+		Max(New Capacity Allocation by Tech[ZTech],New Capacity Allocation by Tech in 5 \
+		years[ZTech]),0)
+		/TIME STEP)
+		*(1-Endogenous Margin Generation Switch),
+		Potential Generation Expansion[ZTech])
+	|
+
+Other Generation Switch=
+	GET XLS CONSTANTS('?Datos', 'General parameters', 'B20')
+	~	Dmnl
+	~	0: CREE
+		1: Endogenous
+	|
+
+Peak Demand by Zone[Zone]=
+	VMAX(Demand by Zone[f0,Hour!,Zone])/1000
+	~	GW
+	~		|
+
+Construction time by tech[ZTech]=
+	GET XLS CONSTANTS('?Datos', 'Gen Investment parameters', 'C3')
+	~	Months
+	~		|
+
+Construction Delay Step=
+	1+
+	0*
+	(
+	+STEP(0.5, 10*12 )
+	-STEP(0.5, 15*12 )
+	)
+	~	Dmnl
+	~	Multiplica el retardo de construcción
+	|
+
+T RES:
+	TBiomass,TWindOnS,TWindOffS,TPV,THydroDam,THRoR,TGeothermal,TPVBESSOp1,TPVBESSOp2
+	~	
+	~		|
+
+Cum Generation Share RES Fossil DER[RESt]=
+	Sum(Accumulated Generation Share[T RES!]) ~~|
+Cum Generation Share RES Fossil DER[Fossilt]=
+	Sum(Accumulated Generation Share[T Fossil!]) ~~|
+Cum Generation Share RES Fossil DER[DERt]=
+	Accumulated Generation Share[DER]
+	~	Dmnl
+	~		|
+
+RES Fossil DER:
+	RESt,Fossilt,DERt
+	~	
+	~		|
+
+T Fossil:
+	TThermo1,TThermo2,TOther1,TOther2,TOther3
+	~	
+	~		|
+
+{UTF-8}
+
+
+Generation by Tech per Month[Tech]=
+	30*Dispatch by Tech per Day[f0,Tech] ~~|
+Generation by Tech per Month[TDERBESS]=
+	30*Daily DER Generation
+	~	GWh/Month
+	~		|
+
+Accumulated Generation by Tech[TechDER]= INTEG (
+	Generation by Tech per Month[TechDER],
+		0.001)
+	~	GWh
+	~		|
+
+Accumulated Generation Share[TechDER]=
+	Accumulated Generation by Tech[TechDER]
+	/
+	Sum(Accumulated Generation by Tech[TechDER!])
+	~	Dmnl
+	~		|
+
+TechDER:
+	Tech, TDERBESS
+	~	
+	~		|
+
+Max Generation Delay=
+	VMAX(Accumulated Generation Delays[ZTech!])
+	~	Months
+	~		|
+
+Visible projects in licensing=
+	GET XLS CONSTANTS('?Datos', 'Gen Investment parameters', 'B10')
+	~	Dmnl
+	~	Fracción de proyectos en proceso de licencia que son visibles o creíbles \
+		para considerar dentro de la capacidad esperada en 5 años
+	|
+
+Total Planned Generation Start=
+	Sum(Planned Generation Capacity[ZTech!])
+	~	MW/Month
+	~		|
+
+Total Planned Genereation next 5y=
+	Sum(Planned Generation next 5 years[ZTech!])
+	~	MW
+	~		|
+
+Total Expected generation Capacity=
+	Sum(Expected Generation Capacity[f5,ZTech!])
+	~	MW
+	~		|
+
+Price Cheapest Thermo=
+	Min(
+	Min(
+	vmin(Min Offer Price[Thermo1!]),
+	vmin(Min Offer Price[Thermo2!])),
+	
+	Min(
+	vmin(Min Offer Price[Biomass!]),
+	vmin(Min Offer Price[Geothermal!]))
+	)
+	~	USD/MWh
+	~		|
+
+Generation Share DER=
+	1-Sum(Generation Share by Tech[Tech!])
+	~	1
+	~		|
+
+Capacity Share DER=
+	1-Sum(Capacity Share by Tech[Tech!])
+	~	Dmnl
+	~		|
+
+Generation Share by Tech[Tech]=
+	Dispatch by Tech per Day[f0,Tech]/
+	(Sum(Dispatch by Tech per Day[f0,Tech!])+Daily DER Generation)
+	~	1
+	~		|
+
+National demand[ForecastYear,Hour]=
+	National hourly demand[ForecastYear,Hour]*MWh por GWh
+	~	MW
+	~		|
+
+Fraction of Demand by zone and month[f0,Zone]:INTERPOLATE:=
+	GET XLS DATA('?Datos', 'Demand by Zone', 'B', 'G2') ~~|
+Fraction of Demand by zone and month[f1,Zone]:INTERPOLATE:=
+	GET XLS DATA('?Datos', 'Demand by Zone', 'B', 'G2') ~~|
+Fraction of Demand by zone and month[f3,Zone]:INTERPOLATE:=
+	GET XLS DATA('?Datos', 'Demand by Zone', 'C', 'G38') ~~|
+Fraction of Demand by zone and month[f5,Zone]:INTERPOLATE:=
+	GET XLS DATA('?Datos', 'Demand by Zone', 'D', 'G62') ~~|
+Fraction of Demand by zone and month[f7,Zone]:INTERPOLATE:=
+	GET XLS DATA('?Datos', 'Demand by Zone', 'E', 'G86') ~~|
+Fraction of Demand by zone and month[f9,Zone]:INTERPOLATE:=
+	GET XLS DATA('?Datos', 'Demand by Zone', 'F', 'G110')
+	~	MW
+	~		|
+
+National hourly demand[f0,Hour]:INTERPOLATE:=
+	GET XLS DATA('?Datos', 'National Demand', 'B', 'G2') ~~|
+National hourly demand[f1,Hour]:INTERPOLATE:=
+	GET XLS DATA('?Datos', 'National Demand', 'B', 'G2') ~~|
+National hourly demand[f3,Hour]:INTERPOLATE:=
+	GET XLS DATA('?Datos', 'National Demand', 'C', 'G38') ~~|
+National hourly demand[f5,Hour]:INTERPOLATE:=
+	GET XLS DATA('?Datos', 'National Demand', 'D', 'G62') ~~|
+National hourly demand[f7,Hour]:INTERPOLATE:=
+	GET XLS DATA('?Datos', 'National Demand', 'E', 'G86') ~~|
+National hourly demand[f9,Hour]:INTERPOLATE:=
+	GET XLS DATA('?Datos', 'National Demand', 'F', 'G110')
+	~	MWh
+	~		|
+
+MWh por GWh=
+	GET XLS CONSTANTS('?Datos', 'General Parameters', 'B19')
+	~	MWh/GWh
+	~		|
+
+Daily DER Generation=
+	Sum(Total DER Generation[Hour!])/1000
+	~	GWh
+	~		|
+
+Time to Form Price Expectation=
+	12
+	~	Months
+	~		|
+
+Max Unmet Demand=
+	VMAX(Unmet Demand[f0,Hour!])
+	~	MWh
+	~		|
+
+Scarcity price=
+	Price Most Expensive Thermo*Scarcity price factor
+	~	USD/MWh
+	~		|
+
+Daily Unmet Demand=
+	Sum(Unmet Demand[f0,Hour!])
+	~	MWh
+	~		|
+
+Only RES Investment=
+	GET XLS CONSTANTS('?Datos', 'General Parameters', 'B17')
+	~	Dmnl
+	~		|
+
+Mean Availability Margin RES=
+	Sum(Availability Margin RES[Hour!])/24
+	~	Dmnl
+	~		|
+
+Min Availability Margin RES=
+	vmin(Availability Margin RES[Hour!])
+	~	Dmnl
+	~		|
+
+Disabled Transmission for Generation by Tech[ZTech]=
+	Retired Generation[ZTech] * Estimated Transmission Factor for Generation[ZTech]
+	~	km/Month
+	~		|
+
+ForecastYear:
+	f0,f1,f3,f5,f7,f9
+	~	
+	~		|
+
+Breakpoints Hydro Price[HBreakpoints]=
+	0.2,0.5,0.8,1
+	~	Dmnl
+	~	0.2,0.3,0.5,0.8
+		0.2,0.4,0.6,1
+	|
+
+HBreakpoints:
+	L1,L2,L3,L4
+	~	
+	~		|
+
+Potential Generation Expansion by Tech[TBiomass]=
+	Sum(Potential Generation Expansion[Biomass!]) ~~|
+Potential Generation Expansion by Tech[TWindOnS]=
+	Sum(Potential Generation Expansion[WindOnS!]) ~~|
+Potential Generation Expansion by Tech[TWindOffS]=
+	Sum(Potential Generation Expansion[WindOffS!]) ~~|
+Potential Generation Expansion by Tech[TPV]=
+	Sum(Potential Generation Expansion[PV!]) ~~|
+Potential Generation Expansion by Tech[THydroDam]=
+	Sum(Potential Generation Expansion[HydroDam!]) ~~|
+Potential Generation Expansion by Tech[THRoR]=
+	Sum(Potential Generation Expansion[HRoR!]) ~~|
+Potential Generation Expansion by Tech[TThermo1]=
+	Sum(Potential Generation Expansion[Thermo1!]) ~~|
+Potential Generation Expansion by Tech[TThermo2]=
+	Sum(Potential Generation Expansion[Thermo2!]) ~~|
+Potential Generation Expansion by Tech[TGeothermal]=
+	Sum(Potential Generation Expansion[Geothermal!]) ~~|
+Potential Generation Expansion by Tech[TPVBESSOp1]=
+	Sum(Potential Generation Expansion[PVBESSOp1!]) ~~|
+Potential Generation Expansion by Tech[TPVBESSOp2]=
+	Sum(Potential Generation Expansion[PVBESSOp2!]) ~~|
+Potential Generation Expansion by Tech[TOther1]=
+	Sum(Potential Generation Expansion[Other1!]) ~~|
+Potential Generation Expansion by Tech[TOther2]=
+	Sum(Potential Generation Expansion[Other2!]) ~~|
+Potential Generation Expansion by Tech[TOther3]=
+	Sum(Potential Generation Expansion[Other3!])
+	~	MW
+	~		|
+
+Decided Generation Investment by Tech[TBiomass]=
+	Sum(New Investment Decisions[Biomass!]) ~~|
+Decided Generation Investment by Tech[TWindOnS]=
+	Sum(New Investment Decisions[WindOnS!]) ~~|
+Decided Generation Investment by Tech[TWindOffS]=
+	Sum(New Investment Decisions[WindOffS!]) ~~|
+Decided Generation Investment by Tech[TPV]=
+	Sum(New Investment Decisions[PV!]) ~~|
+Decided Generation Investment by Tech[THydroDam]=
+	Sum(New Investment Decisions[HydroDam!]) ~~|
+Decided Generation Investment by Tech[THRoR]=
+	Sum(New Investment Decisions[HRoR!]) ~~|
+Decided Generation Investment by Tech[TThermo1]=
+	Sum(New Investment Decisions[Thermo1!]) ~~|
+Decided Generation Investment by Tech[TThermo2]=
+	Sum(New Investment Decisions[Thermo2!]) ~~|
+Decided Generation Investment by Tech[TGeothermal]=
+	Sum(New Investment Decisions[Geothermal!]) ~~|
+Decided Generation Investment by Tech[TPVBESSOp1]=
+	Sum(New Investment Decisions[PVBESSOp1!]) ~~|
+Decided Generation Investment by Tech[TPVBESSOp2]=
+	Sum(New Investment Decisions[PVBESSOp2!]) ~~|
+Decided Generation Investment by Tech[TOther1]=
+	Sum(New Investment Decisions[Other1!]) ~~|
+Decided Generation Investment by Tech[TOther2]=
+	Sum(New Investment Decisions[Other2!]) ~~|
+Decided Generation Investment by Tech[TOther3]=
+	Sum(New Investment Decisions[Other3!])
+	~	MW
+	~		|
+
+New Potential Generation[ZTech]=
+	IF THEN ELSE(MODULO(Time, 1)=0,
+	
+	Future Potential Generation Expansion[ZTech]/TIME STEP,
+	
+	0)
+	~	MW/Month
+	~	Reads from Excel only one value per month.
+		Needs /Time Step
+	|
+
+Planned Generation next 5 years[ ZTech]:INTERPOLATE:=
+	GET XLS DATA('?Datos', 'Cumulative Capacity in 5 years', 'B', 'C2')
+	~	MW
+	~		|
+
+Endogenous Margin Generation Switch=
+	GET XLS CONSTANTS('?Datos', 'General Parameters', 'B13')
+	~	Dmnl
+	~		|
+
+Accumulated Generation Delays[ZTech]=
+	Construction time by tech[ZTech]+Generation License Delay[ZTech]+Other Generation delays\
+		[ZTech]
+	~	Months
+	~		|
+
+Other Generation delays[ZTech]=
+	GET XLS CONSTANTS('?Datos', 'Gen Investment parameters', 'C5')
+	~	Months
+	~		|
+
+Executed Planned Generation [ZTech]=
+	IF THEN ELSE(MODULO(Time, 1)=0,
+	Planned Generation Switch*Planned Generation Capacity[ZTech],
+	0)*(1/TIME STEP)
+	~	MW/Month
+	~	IF THEN ELSE(MODULO(Time, 1)=0,
+		Planned Generation Switch*Planned Generation Capacity[ZTech],
+		0)*(1/TIME STEP)
+	|
+
+Max Unmet Demand No BESS=
+	VMAX(Unmet Demand without BESS[Hour!])
+	~	MWh
+	~		|
+
+Daily Unmet Demand No BESS=
+	Sum(Unmet Demand without BESS[Hour!])
+	~	MWh
+	~		|
+
+Aggregated Reservoir Level=
+	Sum(Reservoir level[HydroDam!])/ELMCOUNT(HydroDam)
+	~	Dmnl
+	~		|
+
+Generation License Delay[ZTech]=
+	GET XLS CONSTANTS('?Datos', 'Gen Investment parameters', 'C4')
+	~	Months
+	~		|
+
+Mean Availability Margin=
+	Sum(Availability Margin[Hour!])/24
+	~	Dmnl
+	~		|
+
+Min Availability Margin=
+	vmin(Availability Margin[Hour!])
+	~	Dmnl
+	~		|
+
+Scarcity price factor=
+	GET XLS CONSTANTS( '?Datos', 'Base', 'C9')
+	~	Dmnl
+	~		|
+
+Geothermal:
+	Z1Geothermal, Z2Geothermal, Z3Geothermal, Z4Geothermal, Z5Geothermal, Z6Geothermal
+	~	
+	~		|
+
+Thermo2:
+	Z1Thermo2, Z2Thermo2, Z3Thermo2, Z4Thermo2, Z5Thermo2, Z6Thermo2
+	~	
+	~		|
+
+Other2:
+	Z1Other2,Z2Other2,Z3Other2,Z4Other2,Z5Other2,Z6Other2
+	~	
+	~		|
+
+Other3:
+	Z1Other3,Z2Other3,Z3Other3,Z4Other3,Z5Other3,Z6Other3
+	~	
+	~		|
+
+PVBESSOp1:
+	Z1PVBESSOp1,Z2PVBESSOp1,Z3PVBESSOp1,Z4PVBESSOp1,Z5PVBESSOp1,Z6PVBESSOp1
+	~	
+	~		|
+
+PVBESSOp2:
+	Z1PVBESSOp2,Z2PVBESSOp2,Z3PVBESSOp2,Z4PVBESSOp2,Z5PVBESSOp2,Z6PVBESSOp2
+	~	
+	~		|
+
+Other1:
+	Z1Other1,Z2Other1,Z3Other1,Z4Other1,Z5Other1,Z6Other1
+	~	
+	~		|
+
+WindOnS:
+	Z1WindOnS,Z2WindOnS,Z3WindOnS,Z4WindOnS,Z5WindOnS,Z6WindOnS
+	~	
+	~		|
+
+WindOffS:
+	Z1WindOffS,Z2WindOffS,Z3WindOffS,Z4WindOffS,Z5WindOffS,Z6WindOffS
+	~	
+	~		|
+
+Generation Capacity by Tech[TBiomass]=
+	Sum(Generation Capacity[Biomass!])/1000 ~~|
+Generation Capacity by Tech[TWindOnS]=
+	Sum(Generation Capacity[WindOnS!])/1000 ~~|
+Generation Capacity by Tech[TWindOffS]=
+	Sum(Generation Capacity[WindOffS!])/1000 ~~|
+Generation Capacity by Tech[TPV]=
+	Sum(Generation Capacity[PV!])/1000 ~~|
+Generation Capacity by Tech[THRoR]=
+	Sum(Generation Capacity[HRoR!])/1000 ~~|
+Generation Capacity by Tech[THydroDam]=
+	Sum(Generation Capacity[HydroDam!])/1000 ~~|
+Generation Capacity by Tech[TThermo1]=
+	Sum(Generation Capacity[Thermo1!])/1000 ~~|
+Generation Capacity by Tech[TThermo2]=
+	Sum(Generation Capacity[Thermo2!])/1000 ~~|
+Generation Capacity by Tech[TGeothermal]=
+	Sum(Generation Capacity[Geothermal!])/1000 ~~|
+Generation Capacity by Tech[TPVBESSOp1]=
+	Sum(Generation Capacity[PVBESSOp1!])/1000 ~~|
+Generation Capacity by Tech[TPVBESSOp2]=
+	Sum(Generation Capacity[PVBESSOp2!])/1000 ~~|
+Generation Capacity by Tech[TOther1]=
+	Sum(Generation Capacity[Other1!])/1000 ~~|
+Generation Capacity by Tech[TOther2]=
+	Sum(Generation Capacity[Other2!])/1000 ~~|
+Generation Capacity by Tech[TOther3]=
+	Sum(Generation Capacity[Other3!])/1000
+	~	GW
+	~		|
+
+expensive hours:
+	H18,H19,H20,H21
+	~	
+	~		|
+
+Sun Hours:
+	H6,H7,H8,H9,H10,H11,H12,H13,H14,H15,H16,H17,H18
+	~	
+	~		|
+
+Night Hours:
+	H0,H1,H2,H3,H4,H5,H6,H18,H19,H20,H21,H22,H23
+	~	
+	~		|
+
+Low Hours:
+	H0,H1,H2,H3
+	~	
+	~		|
+
+Renewables:
+	Z1Biomass,Z2Biomass,Z3Biomass,Z4Biomass,Z5Biomass,Z6Biomass,
+	Z1WindOnS,Z2WindOnS,Z3WindOnS,Z4WindOnS,Z5WindOnS,Z6WindOnS,
+	Z1WindOffS,Z2WindOffS,Z3WindOffS,Z4WindOffS,Z5WindOffS,Z6WindOffS,
+	Z1PV,Z2PV,Z3PV,Z4PV,Z5PV,Z6PV,
+	Z1HRoR,Z2HRoR,Z3HRoR,Z4HRoR,Z5HRoR,Z6HRoR,
+	Z1HydroDam,Z2HydroDam,Z3HydroDam,Z4HydroDam,Z5HydroDam,Z6HydroDam, 
+	Z1Geothermal, Z2Geothermal, Z3Geothermal, Z4Geothermal, Z5Geothermal, Z6Geothermal,
+	Z1PVBESSOp1,Z2PVBESSOp1,Z3PVBESSOp1,Z4PVBESSOp1,Z5PVBESSOp1,Z6PVBESSOp1,
+	Z1PVBESSOp2,Z2PVBESSOp2,Z3PVBESSOp2,Z4PVBESSOp2,Z5PVBESSOp2,Z6PVBESSOp2
+	~	
+	~		|
+
+********************************************************
+	.modelocolombiafuturo30-03-2023
+********************************************************~
+	|
+
+Energy Availability Allocation by Tech RES[ForecastYear,Renewables]=
+	IF THEN ELSE(Sum(Potential Daily Availability[Renewables!])>0:AND:
+	             Total Daily Extra Availability Need[ForecastYear]>0,
+	
+	Min(
+	  Sum(Potential Daily Availability[Renewables!]),
+	  Total Daily Extra Availability Need[ForecastYear])*(Potential Daily Availability[Renewables\
+		]/Sum(Potential Daily Availability[Renewables
+	!] )
+	  )
+	
+	,0)
+	
+	/
+	IF THEN ELSE(Potential Daily Availability[Renewables]=0,1,
+	  Sum(Availability Factor[Hour!,Renewables])
+	  ) ~~|
+Energy Availability Allocation by Tech RES[ForecastYear,ZTech] :EXCEPT:  [ForecastYear\
+		,Renewables]=
+	0
+	~	MW
+	~	/
+		IF THEN ELSE(Potential Daily Availability[Renewables]=0,1,
+		  Sum(Availability Factor[Hour!,Renewables])
+		  )
+	|
+
+Residual demand by hour[Hour]=
+	Sum(Residual Demand by zone stratum and hour[EnergyUsers!,Hour,Zone!])
+	~	MWh
+	~		|
+
+Availability Margin RES[Hour]=
+	IF THEN ELSE( Residual Demand[f0,Hour]=0 , 2 ,
+	Min((Total Expected Available Generation RES[f0,Hour]-Residual Demand[f0,Hour])/Residual Demand\
+		[f0,Hour],2)
+	)
+	~	Dmnl
+	~		|
+
+Dispatch by Tech per Day[ForecastYear,Tech]=
+	Sum(Dispatch by Tech[ForecastYear,Hour!,Tech])/1000
+	~	GWh
+	~		|
+
+Extra Availability Need RES[ForecastYear,Hour]=
+	Residual Demand[ForecastYear,Hour]-Total Expected Available Generation RES[ForecastYear\
+		,Hour]
+	~	MWh
+	~		|
+
+Total Daily Extra Availability Need RES[ForecastYear]=
+	Max(0,Sum(Extra Availability Need RES[ForecastYear,Hour!]))
+	~	MWh
+	~		|
+
+Total Expected Available Generation RES[ForecastYear,Hour]=
+	Sum((Expected Generation Capacity[ForecastYear,Renewables!])*Availability Factor[Hour\
+		,Renewables!])
+	~	MWh
+	~	Sum((Expected Generation Capacity[ForecastYear,Biomass!]+Planned Generation \
+		Start[Biomass!])*Availability Factor[Hour,Biomass!])+
+		Sum((Expected Generation Capacity[ForecastYear,HydroDam!]+Planned Generation \
+		Start[HydroDam!])*Availability Factor[Hour,HydroDam!])+
+		Sum((Expected Generation Capacity[ForecastYear,HRoR!]+Planned Generation \
+		Start[HRoR!])*Availability Factor[Hour,HRoR!])+
+		Sum((Expected Generation Capacity[ForecastYear,PV!]+Planned Generation \
+		Start[PV!])*Availability Factor[Hour,PV!])+
+		Sum((Expected Generation Capacity[ForecastYear,WindOnS!]+Planned Generation \
+		Start[WindOnS!])*Availability Factor[Hour,WindOnS!])+
+		Sum((Expected Generation Capacity[ForecastYear,WindOffS!]+Planned Generation \
+		Start[WindOffS!])*Availability Factor[Hour,WindOffS!])+
+		Sum((Expected Generation Capacity[ForecastYear,Geothermal!]+Planned Generation \
+		Start[WindOffS!])*Availability Factor[Hour,Geothermal!])+
+		Sum((Expected Generation Capacity[ForecastYear,PVBESSOp1!]+Planned Generation \
+		Start[WindOffS!])*Availability Factor[Hour,PVBESSOp1!])+
+		Sum((Expected Generation Capacity[ForecastYear,PVBESSOp2!]+Planned \
+		Generation Start[WindOffS!])*Availability Factor[Hour,PVBESSOp2!])
+	|
+
+New Capacity Allocation by Tech[ForecastYear,ZTech]=
+	IF THEN ELSE(Power Allocation[ForecastYear] = 1 
+	                :OR:Sum(Energy Availability Allocation by Tech[ForecastYear,ZTech!])\
+		=0,
+	             Power Availability Allocation by Tech[ForecastYear,ZTech],
+	 
+	  IF THEN ELSE(
+	        Sum(Energy Availability Allocation by Tech[ForecastYear,ZTech!])<=Sum(Power Availability Allocation by Tech\
+		[ForecastYear,ZTech!]),
+	           Energy Availability Allocation by Tech[ForecastYear,ZTech],
+	             Power Availability Allocation by Tech[ForecastYear,ZTech]
+	              )
+	)
+	~	MW
+	~		|
+
+Power Availability Allocation by Tech ALL[ForecastYear,ZTech]=
+	IF THEN ELSE(Mean Availability Factor Hour of Max Need[ForecastYear,ZTech]=0,0,
+	IF THEN ELSE(Sum(Potential Availability in Hour of Max Need[ForecastYear,ZTech!])>0,\
+		Min(Max Availability Need[ForecastYear],Sum(Potential Availability in Hour of Max Need\
+		[ForecastYear,ZTech!]))*(Potential Availability in Hour of Max Need[ForecastYear,ZTech\
+		]/Sum(Potential Availability in Hour of Max Need[ForecastYear,ZTech!])),0)
+	/
+	Mean Availability Factor Hour of Max Need[ForecastYear,ZTech]
+	)
+	~	MW
+	~		|
+
+Extra Hydrodam Power[ForecastYear,Z1HydroDam]=
+	Expected Generation Capacity[ForecastYear,Z1HydroDam]*(1-Availability Factor[H1,Z1HydroDam\
+		]) ~~|
+Extra Hydrodam Power[ForecastYear,Z2HydroDam]=
+	Expected Generation Capacity[ForecastYear,Z2HydroDam]*(1-Availability Factor[H1,Z2HydroDam\
+		]) ~~|
+Extra Hydrodam Power[ForecastYear,Z3HydroDam]=
+	Expected Generation Capacity[ForecastYear,Z3HydroDam]*(1-Availability Factor[H1,Z3HydroDam\
+		]) ~~|
+Extra Hydrodam Power[ForecastYear,Z4HydroDam]=
+	Expected Generation Capacity[ForecastYear,Z4HydroDam]*(1-Availability Factor[H1,Z4HydroDam\
+		]) ~~|
+Extra Hydrodam Power[ForecastYear,Z5HydroDam]=
+	Expected Generation Capacity[ForecastYear,Z5HydroDam]*(1-Availability Factor[H1,Z5HydroDam\
+		]) ~~|
+Extra Hydrodam Power[ForecastYear,Z6HydroDam]=
+	Expected Generation Capacity[ForecastYear,Z6HydroDam]*(1-Availability Factor[H1,Z6HydroDam\
+		])
+	~	MW
+	~		|
+
+Only Power Allocation=
+	GET XLS CONSTANTS('?Datos', 'General Parameters', 'B18')
+	~	Dmnl
+	~		|
+
+Potential Daily Availability[ZTech]=
+	Sum(Availability Factor[Hour!,ZTech]*Potential Generation Expansion[ZTech])
+	~	MWh
+	~		|
+
+Width=
+	0.0001
+	~	Dmnl
+	~		|
+
+********************************************************
+	.modelocolombiafuturo16-02-2023
+********************************************************~
+	|
+
+Energy Availability Allocation by Tech[ForecastYear,ZTech]=
+	Only RES Investment*Energy Availability Allocation by Tech RES[ForecastYear,ZTech] 
+	+
+	(1-Only RES Investment)*Energy Availability Allocation by Tech ALL[ForecastYear,ZTech\
+		]
+	~	MWh
+	~		|
+
+Energy Availability Allocation by Tech ALL[ForecastYear,ZTech]=
+	IF THEN ELSE(Sum(Potential Daily Availability[ZTech!])>0:AND:
+	             Total Daily Extra Availability Need[ForecastYear]>0,
+	
+	             Min(
+	               Sum(Potential Daily Availability[ZTech!]),
+	
+	               Total Daily Extra Availability Need[ForecastYear])
+	                 *(Potential Daily Availability[ZTech]/Sum(Potential Daily Availability\
+		[ZTech!] )
+	               )
+	
+	             ,0)
+	
+	/
+	IF THEN ELSE(Potential Daily Availability[ZTech]=0,
+	  1,
+	  Sum(Availability Factor[Hour!,ZTech])
+	  )
+	~	MW
+	~	/
+		IF THEN ELSE(Potential Daily Availability[Renewables]=0,1,
+		  Sum(Availability Factor[Hour!,Renewables])
+		  )
+	|
+
+Total Daily Extra Availability Need[ForecastYear]=
+	Max(Sum(Extra Availability Need[ForecastYear,Hour!]),0)
+	~	MWh
+	~		|
+
+********************************************************
+	.modelo con disp hidro al 100 13-02-2023
+********************************************************~
+	|
+
+Generation Capacity by Zone[Z1]=
+	Sum(Generation Capacity[Z1Tech!]) ~~|
+Generation Capacity by Zone[Z2]=
+	Sum(Generation Capacity[Z2Tech!]) ~~|
+Generation Capacity by Zone[Z3]=
+	Sum(Generation Capacity[Z3Tech!]) ~~|
+Generation Capacity by Zone[Z4]=
+	Sum(Generation Capacity[Z4Tech!]) ~~|
+Generation Capacity by Zone[Z5]=
+	Sum(Generation Capacity[Z5Tech!]) ~~|
+Generation Capacity by Zone[Z6]=
+	Sum(Generation Capacity[Z6Tech!])
+	~	MW
+	~		|
+
+********************************************************
+	.modelo26-01-2023
+********************************************************~
+	|
+
+Interconnection Capacity Margin[Int,Zone]=
+	IF THEN ELSE(Needed Grid Capacity[f0,Zone]=0, 1,
+	(Interconnection Capacity[Int]-Needed Grid Capacity[f0,Zone])
+	/Needed Grid Capacity[f0,Zone]
+	)
+	~	Dmnl
+	~		|
+
+Generation Tariff[ForecastYear,Zone]=
+	Weighted Mean Price[ForecastYear,Zone]
+	~	USD/MWh
+	~		|
+
+Monthly Mean Generation Price[ForecastYear]=
+	Sum(Generation Tariff[ForecastYear,Zone!]*Residual Demand by zone[ForecastYear,Hour!\
+		,Zone!])
+	/
+	Sum(Residual Demand by zone[ForecastYear,Hour!,Zone!])
+	~	USD/MWh
+	~		|
+
+DER Expansion Switch=
+	GET XLS CONSTANTS('?Datos', 'General Parameters', 'B14')
+	~	Dmnl
+	~		|
+
+Tariff Subsidies[EnergyUsers]=
+	GET XLS CONSTANTS('?Datos', 'Energy Users', 'B3')
+	~	Dmnl
+	~		|
+
+********************************************************
+	.modelofuturocolombia(9-11-2022)ultimo
+********************************************************~
+	|
+
+Extra Availability Need[ForecastYear,Hour]=
+	(Residual Demand[ForecastYear,Hour]*(1+Desired Availability Margin))
+	-(1-Only RES Investment)*Total Expected Available Generation[ForecastYear,Hour]
+	-Only RES Investment*Total Expected Available Generation RES[ForecastYear,Hour]
+	~	MWh
+	~		|
+
+New PV DER Capacity[EnergyUsers,Zone,DER]=
+	DER Desired Investment by Price[EnergyUsers,Zone,DER]
+	*Investment Factor by Social Influence[EnergyUsers,Zone]
+	*DER Expansion Switch ~~|
+New PV DER Capacity[EnergyUsers,Zone,DERBESS]=
+	IF THEN ELSE(Generation Capacity[Z1PVBESSOp1]=0,0 ,
+	DER Desired Investment by Price[EnergyUsers,Zone,DERBESS]
+	*Investment Factor by Social Influence[EnergyUsers,Zone]
+	*DER Expansion Switch*0.05)*Switch BESS
+	~	MW/Month
+	~	((Potential Market per user at 12 PM[EnergyUsers,Zone]*Final Investment Factor by \
+		Price Margin[EnergyUsers,Zone])+(Investment Factor by Social Influence
+		[EnergyUsers,Zone]*Potential Market per user at 12 PM[EnergyUsers,Zone]*Final \
+		Investment Factor by Price Margin[EnergyUsers
+		,Zone])*0)*(1-Planned DER Expansion Switch)
+	|
+
+Transmission for Demand[ForecastYear,Zone]=
+	((Peak Residual Demand[ForecastYear]-BESS Peak Shaving*Switch BESS)*Estimated Transmission Factor per Demand\
+		+Old Transmission Correction
+	)*Fraction of Demand by zone and month
+	[f0,Zone]
+	~	km
+	~		|
+
+DER Price Margin[EnergyUsers,Zone]=
+	Max(Tariff Expectation[EnergyUsers,Zone]-LCOE[EnergyUsers,PV],0)
+	~	USD/MWh
+	~		|
+
+Adjusted Offer Price Ideal Predispatch No BESS[ForecastYear,Hour,ZTech] :EXCEPT:               \
+		[ForecastYear,Hour,HydroDam]
+,[ForecastYear,Hour,PVBESSOp1],[ForecastYear,Hour,PVBESSOp2]=
+	IF THEN ELSE(Generation Factor Ideal Predispatch No BESS[ForecastYear,Hour,ZTech]=0,\
+		 0, 
+	
+	Min Offer Price[ZTech]+
+	Generation Factor Ideal Predispatch No BESS[ForecastYear,Hour,ZTech] * (Max Offer Price\
+		[ZTech]-Min Offer Price[ZTech])
+	) ~~|
+Adjusted Offer Price Ideal Predispatch No BESS[ForecastYear,Hour,HydroDam]=
+	IF THEN ELSE(Ideal Predispacth No BESS[ForecastYear,Hour,HydroDam]>0,Offer price hydro adjusted\
+		[HydroDam],0) ~~|
+Adjusted Offer Price Ideal Predispatch No BESS[ForecastYear,Hour,PVBESSOp1]=
+	Adjusted Predispatch PVBESS Price[ForecastYear,Hour,PVBESSOp1] ~~|
+Adjusted Offer Price Ideal Predispatch No BESS[ForecastYear,Hour,PVBESSOp2]=
+	Adjusted Predispatch PVBESS Price[ForecastYear,Hour,PVBESSOp2]
+	~	USD/MWh
+	~	IF THEN ELSE(Generation Factor Ideal Predispatch[Hour,ZTech]=0, 0, 
+		
+		Min Offer Price[ZTech]+
+		Generation Factor Ideal Predispatch[Hour,ZTech] * (Max Offer Price[ZTech]-Min Offer \
+		Price[ZTech])
+		
+		)
+	|
+
+Adjusted Offer Price Isolated Dispatch[ForecastYear,Hour,ZTech] :EXCEPT:       [ForecastYear\
+		,Hour,HydroDam], [ForecastYear,Hour,PVBESSOp1], [ForecastYear,Hour,PVBESSOp2]=
+	IF THEN ELSE( Generation Factor Isolated[ForecastYear,Hour,ZTech]=0, 0, 
+	
+	Min Offer Price[ZTech]+
+	Generation Factor Isolated[ForecastYear,Hour,ZTech] * (Max Offer Price[ZTech]-Min Offer Price\
+		[ZTech])
+	
+	) ~~|
+Adjusted Offer Price Isolated Dispatch[ForecastYear,Hour,HydroDam]=
+	IF THEN ELSE(Isolated Dispatch[ForecastYear,Hour,HydroDam]>0,
+	Offer price hydro adjusted[HydroDam],0) ~~|
+Adjusted Offer Price Isolated Dispatch[ForecastYear,Hour,PVBESSOp1]=
+	Adjusted Isolated PVBESS Price[ForecastYear,Hour,PVBESSOp1] ~~|
+Adjusted Offer Price Isolated Dispatch[ForecastYear,Hour,PVBESSOp2]=
+	Adjusted Isolated PVBESS Price[ForecastYear,Hour,PVBESSOp2]
+	~	USD/MWh
+	~		|
+
+Adjusted Offer Price Ideal Dispatch[ForecastYear,Hour,ZTech] :EXCEPT:                \
+		[ForecastYear,Hour,HydroDam], [ForecastYear
+,Hour,PVBESSOp1], [ForecastYear,Hour,PVBESSOp2]=
+	IF THEN ELSE(Generation Factor Ideal Dispatch[ForecastYear,Hour,ZTech]=0, 0, 
+	
+	Min Offer Price[ZTech]+
+	Generation Factor Ideal Dispatch[ForecastYear,Hour,ZTech] * (Max Offer Price[ZTech]-\
+		Min Offer Price[ZTech])
+	
+	) ~~|
+Adjusted Offer Price Ideal Dispatch[ForecastYear,Hour,HydroDam]=
+	IF THEN ELSE(Ideal Dispatch[ForecastYear,Hour,HydroDam]>0,
+	Offer price hydro adjusted[HydroDam],0) ~~|
+Adjusted Offer Price Ideal Dispatch[ForecastYear,Hour,PVBESSOp1]=
+	Adjusted Ideal PVBESS Price[ForecastYear,Hour,PVBESSOp1] ~~|
+Adjusted Offer Price Ideal Dispatch[ForecastYear,Hour,PVBESSOp2]=
+	Adjusted Ideal PVBESS Price[ForecastYear,Hour,PVBESSOp2]
+	~	USD/MWh
+	~		|
+
+Interconnection Capacity under delay condition[Int,TrasmTech]= INTEG (
+	Start Delay Process Interconnection Capacity[Int,TrasmTech]-New Interconnection Capacity\
+		[Int,TrasmTech],
+		0)
+	~	MW
+	~		|
+
+Availability Factor BESS Adjusted[Hour,ZTech] :EXCEPT:      [Hour,PVBESSOp1],[Hour,PVBESSOp2\
+		]=
+	Availability Factor[Hour,ZTech] ~~|
+Availability Factor BESS Adjusted[Hour,PVBESSOp1]=
+	BESS Discharging Hour[f0,Hour,PVBESSOp1] ~~|
+Availability Factor BESS Adjusted[Hour,PVBESSOp2]=
+	BESS Discharging Hour[f0,Hour,PVBESSOp2]
+	~	Dmnl
+	~		|
+
+Transmission for Interconnection km= INTEG (
+	Sum(Executed Interconnection km[Int!])+New Transmission for Interconnections,
+		Sum(Initial Interconnection km[Int!]))
+	~	km
+	~		|
+
+Availability Factor[Hour,ZTech] :EXCEPT:   [Hour,HydroDam]=
+	Initial Availability Factor[Hour,ZTech] ~~|
+Availability Factor[Hour,HydroDam]=
+	HydroDam Availability Factor[Hour,HydroDam]
+	~	Dmnl
+	~		|
+
+Transmission for Generation Connection[Zone]= INTEG (
+	New Transmission for Generation[Zone],
+		Initial Transmission for Generation by Zone[Zone])
+	~	km
+	~		|
+
+Interconnection Capacity in licensing process[Int,TrasmTech]= INTEG (
+	Start licensing Interconnection Capacity[Int,TrasmTech]-Start Construction Interconnection Capacity\
+		[Int,TrasmTech],
+		0)
+	~	MW
+	~		|
+
+Start Construction Transmission for Interconnections= DELAY MATERIAL (
+	Start licensing Transmission for Interconnections,Transmission License Delay TI[Lines\
+		],0,0)
+	~	km/Month
+	~		|
+
+Expected Interconnection Capacity[f0,Int]=
+	Interconnection Capacity[Int] ~~|
+Expected Interconnection Capacity[f1,Int]=
+	Interconnection Capacity[Int] ~~|
+Expected Interconnection Capacity[f3,Int]=
+	Interconnection Capacity[Int]+Sum(Interconnection Capacity under delay condition[Int\
+		,TrasmTech!])+Sum(Interconnection Capacity under Construction[Int,TrasmTech!]) ~~|
+Expected Interconnection Capacity[f5,Int]=
+	Interconnection Capacity[Int]+Sum(Interconnection Capacity under delay condition[Int\
+		,TrasmTech!])+Sum(Interconnection Capacity in licensing process
+	[Int,TrasmTech!])+Sum(Interconnection Capacity under Construction[Int,TrasmTech!]) ~~|
+Expected Interconnection Capacity[f7,Int]=
+	Interconnection Capacity[Int]+Sum(Interconnection Capacity in licensing process[Int,\
+		TrasmTech!])+Sum(Interconnection Capacity under delay condition
+	[Int,TrasmTech!])
+	+Sum(Investor Selection Process IC[Int,TrasmTech!])+Sum(Transmission Public Tender Preparation IC\
+		[Int,TrasmTech!])+Planned Interconnection next 7 years
+	[Int]+Sum(Interconnection Capacity under Construction[Int,TrasmTech!])+Sum(
+	Expansion Plan Development IC[Int,TrasmTech!]) ~~|
+Expected Interconnection Capacity[f9,Int]=
+	Interconnection Capacity[Int]+Sum(Interconnection Capacity in licensing process[Int,\
+		TrasmTech!])+Sum(Interconnection Capacity under delay condition
+	[Int,TrasmTech!])
+	+Sum(Investor Selection Process IC[Int,TrasmTech!])+Sum(Transmission Public Tender Preparation IC\
+		[Int,TrasmTech!])+Sum(
+	Expansion Plan Development IC[Int,TrasmTech!])+Planned Interconnection next 7 years[\
+		Int]+Sum(Interconnection Capacity under Construction[Int,TrasmTech!])
+	~	MW
+	~		|
+
+New Interconnection Capacity[Int,TrasmTech]= DELAY MATERIAL (
+	Start Delay Process Interconnection Capacity[Int,TrasmTech],Other Transmission delays TI\
+		[TrasmTech], 0,0)
+	~	MW/Month
+	~		|
+
+Generation Capacity Adjusted[ZTech] :EXCEPT:   [Others]=
+	Generation Capacity[ZTech] ~~|
+Generation Capacity Adjusted[Others]=
+	0
+	~	MW
+	~		|
+
+Transmission under Construction TI= INTEG (
+	Start Construction Transmission for Interconnections-Start Delay Process Transmission for Interconnection\
+		,
+		0)
+	~	km
+	~		|
+
+Power Availability Allocation by Tech RES[ForecastYear,ZTech] :EXCEPT:  [ForecastYear\
+		,Renewables]=
+	0 ~~|
+Power Availability Allocation by Tech RES[ForecastYear,Renewables]=
+	IF THEN ELSE(Mean Availability Factor Hour of Max Need[ForecastYear,Renewables]=0,0,
+	IF THEN ELSE(Sum(Potential Availability in Hour of Max Need[ForecastYear,Renewables!\
+		])>0,
+	Min(Max Availability Need[ForecastYear],
+	Sum(Potential Availability in Hour of Max Need[ForecastYear,Renewables!]))*
+	(Potential Availability in Hour of Max Need[ForecastYear,Renewables]/
+	Sum(Potential Availability in Hour of Max Need[ForecastYear,Renewables!])),0)
+	/
+	Mean Availability Factor Hour of Max Need[ForecastYear,Renewables]
+	)
+	~	MW
+	~		|
+
+New Transmission for Generation Connection=
+	Sum(New Transmission for Generation[Zone!])
+	~	km/Month
+	~		|
+
+Residual Demand by zone stratum and hour[EnergyUsers,Hour,Zone]=
+	(Demand by Zone[f0,Hour,Zone]*Fraction of Demand by User Type[EnergyUsers])-Sum(DER Generation\
+		[EnergyUsers,Hour,Zone,TDERBESS!])
+	~	MWh
+	~	IF THEN ELSE( Sum(Demand by Zone[Hour!,Zone])=0 , 1, 
+		
+		(Sum(Residual Demand by zone[Hour!,Zone])/Sum(Demand by Zone[Hour!,Zone]))
+		)
+	|
+
+Total New DER by Zone[Zone]=
+	Sum(New PV DER Capacity[EnergyUsers!,Zone,DER])
+	~	MW/Month
+	~		|
+
+DER Generation[EnergyUsers,Hour,Zone,DER]=
+	DER Capacity[EnergyUsers,Zone,DER]*Availability Factor[Hour,PV] ~~|
+DER Generation[EnergyUsers,Hour,Zone,DERBESS]=
+	DER Capacity[EnergyUsers,Zone,DERBESS]*Availability Factor[Hour,Z1PVBESSOp1]
+	~	MWh
+	~	forecast?
+	|
+
+Total DER Capacity by Tech[TDERBESS]=
+	Sum(DER Capacity by Zone[Zone!,TDERBESS])/1000
+	~	GW
+	~		|
+
+Total DER Generation[Hour]=
+	Sum(DER Generation[EnergyUsers!,Hour,Zone!,DER])
+	~	MWh
+	~		|
+
+Total DER Generation by Hour and Zone[Hour, Zone]=
+	Sum(DER Generation[EnergyUsers!,Hour,Zone,TDERBESS!])
+	~	MWh
+	~		|
+
+Offer price hydro adjusted[ZTech] :EXCEPT:      [HydroDam]=
+	Offer Price[ZTech] ~~|
+Offer price hydro adjusted[HydroDam]=
+	Hydropower Price[HydroDam]
+	~	USD/MWh
+	~	VMAX(Offer Price[ZTech!])*Hydropower Price Factor
+		Offer Price[Z1Thermo]*Hydropower Price Factor
+	|
+
+Total DER Capacity=
+	Sum(Total DER Capacity by Tech[TDERBESS!])
+	~	GW
+	~		|
+
+DER Capacity[EnergyUsers,Zone,DER]= INTEG (
+	(New PV DER Capacity[EnergyUsers,Zone,DER]+Planned DER Start[EnergyUsers,Zone]),
+		Initial PV DER Capacity[EnergyUsers,Zone]) ~~|
+DER Capacity[EnergyUsers,Zone,DERBESS]= INTEG (
+	(New PV DER Capacity[EnergyUsers,Zone,DERBESS]),
+		0)
+	~	MW
+	~		|
+
+DER Capacity by Zone[Zone,TDERBESS]=
+	Sum(DER Capacity[EnergyUsers!,Zone,TDERBESS])
+	~	MW
+	~		|
+
+Capacity Share by Tech[Tech]=
+	Generation Capacity by Tech[Tech]/
+	(Sum(Generation Capacity by Tech[Tech!])+Sum(Total DER Capacity by Tech[TDERBESS!]))
+	~	Dmnl
+	~		|
+
+Investment Factor by Social Influence[EnergyUsers,Zone]=
+	DER Investment by Social Influence Curve Parameters[m]
+	+(DER Investment by Social Influence Curve Parameters[r]
+	  /(1+EXP(
+	       (-DER Investment by Social Influence Curve Parameters[c1])
+	          *(Potential Market Fraction[EnergyUsers,Zone,DER]
+	              -DER Investment by Social Influence Curve Parameters[c2]))))
+	~	Dmnl
+	~		|
+
+Generation Factor Ideal Dispatch[ForecastYear,Hour,ZTech]=
+	IF THEN ELSE(Ideal Dispatch [ForecastYear,Hour,ZTech]=0, 0,Ideal Dispatch [ForecastYear\
+		,Hour,ZTech]/Expected Generation Capacity
+	[ForecastYear,ZTech])
+	~	Dmnl
+	~		|
+
+Ideal Dispatch Price[ForecastYear,Hour]=
+	(VMAX(Adjusted Offer Price Ideal Dispatch[ForecastYear,Hour,ZTech!]))
+	~	USD/MWh
+	~		|
+
+Zonal Price[ForecastYear,Hour,Zone]=
+	Isolated Zone Prices[ForecastYear,Hour,Zone] +
+	IF THEN ELSE(
+	Sum(Interconnection Capacity[Int!]*Interconnection Pairs Cases[Int!,Zone])= 0,
+	0,
+	((Min(Sum(Interconnection Capacity[Int!]*Interconnection Pairs Cases[Int!,Zone]),
+	Needed Grid Capacity[ForecastYear,Zone])
+	/Needed Grid Capacity[ForecastYear,Zone])
+	
+	*((Ideal Dispatch Price[ForecastYear,Hour]-Isolated Zone Prices[ForecastYear,Hour,Zone\
+		])
+	)*(1-Switch Dispatch)+Sum(Zonal Price Congested[ForecastYear,Hour,Int!,Zone]*Interconnection Pairs Cases\
+		[Int!,Zone])*Switch Dispatch))
+	~	USD/MWh
+	~		|
+
+Dispatch by Tech[ForecastYear,Hour,TBiomass]=
+	Sum(Ideal Dispatch [ForecastYear,Hour,Biomass!]) ~~|
+Dispatch by Tech[ForecastYear,Hour,TWindOnS]=
+	Sum(Ideal Dispatch [ForecastYear,Hour,WindOnS!]) ~~|
+Dispatch by Tech[ForecastYear,Hour,TWindOffS]=
+	Sum(Ideal Dispatch [ForecastYear,Hour,WindOffS!]) ~~|
+Dispatch by Tech[ForecastYear,Hour,TPV]=
+	Sum(Ideal Dispatch [ForecastYear,Hour,PV!]) ~~|
+Dispatch by Tech[ForecastYear,Hour,THRoR]=
+	Sum(Ideal Dispatch [ForecastYear,Hour,HRoR!]) ~~|
+Dispatch by Tech[ForecastYear,Hour,THydroDam]=
+	Sum(Ideal Dispatch [ForecastYear,Hour,HydroDam!]) ~~|
+Dispatch by Tech[ForecastYear,Hour,TThermo1]=
+	Sum(Ideal Dispatch [ForecastYear,Hour,Thermo1!]) ~~|
+Dispatch by Tech[ForecastYear,Hour,TThermo2]=
+	Sum(Ideal Dispatch [ForecastYear,Hour,Thermo2!]) ~~|
+Dispatch by Tech[ForecastYear,Hour,TGeothermal]=
+	Sum(Ideal Dispatch [ForecastYear,Hour,Geothermal!]) ~~|
+Dispatch by Tech[ForecastYear,Hour,TPVBESSOp1]=
+	Sum(Ideal Dispatch [ForecastYear,Hour,PVBESSOp1!]) ~~|
+Dispatch by Tech[ForecastYear,Hour,TPVBESSOp2]=
+	Sum(Ideal Dispatch [ForecastYear,Hour,PVBESSOp2!]) ~~|
+Dispatch by Tech[ForecastYear,Hour,TOther1]=
+	Sum(Ideal Dispatch [ForecastYear,Hour,Other1!]) ~~|
+Dispatch by Tech[ForecastYear,Hour,TOther2]=
+	Sum(Ideal Dispatch [ForecastYear,Hour,Other2!]) ~~|
+Dispatch by Tech[ForecastYear,Hour,TOther3]=
+	Sum(Ideal Dispatch [ForecastYear,Hour,Other3!])
+	~	MW
+	~		|
+
+Start licensing Interconnection Capacity[Int,TrasmTech]= DELAY MATERIAL (
+	 Start Investor Selection Interconnection Capacity[Int,TrasmTech],Investor Selection Delay TI\
+		[TrasmTech],0,0)
+	~	MW/Month
+	~		|
+
+Interconnection Lenght Active Case[Int]=
+	Interconnection Lenght by Case[Int]*
+	IF THEN ELSE(Sum(Interconnection Case[Int,Zone!])>0, 1, 0)*(1-Switch Dispatch)+
+	Interconnection Lenght by Case[Int]*IF THEN ELSE(Grid Technology Need[Int,Lines]>0,1\
+		,0)*Switch Dispatch
+	~	km
+	~		|
+
+Call for Interconnection Capacity[Int,TrasmTech]=
+	(Zones to Expand Interconnection[Int]*Interconnection Capacity to Install)*
+	(1/TIME STEP)*(1-Switch Dispatch)
+	+Grid Technology Need[Int,TrasmTech]*(1/TIME STEP)*Switch Dispatch
+	~	MW/Month
+	~		|
+
+Transmission Public Tender Preparation IC[Int,TrasmTech]= INTEG (
+	New approved Interconnection Capacity projects[Int,TrasmTech]-Start Investor Selection Interconnection Capacity\
+		[Int,TrasmTech],
+		0)
+	~	MW
+	~		|
+
+New approved Interconnection Capacity projects[Int,TrasmTech]=
+	IF THEN ELSE(Expansion Plan Delay TI[TrasmTech]=0,
+	Call for Interconnection Capacity[Int,TrasmTech],
+	 IF THEN ELSE(MODULO(Time,Expansion Plan Delay TI[TrasmTech])=0 , 
+	 Expansion Plan Development IC[Int,TrasmTech]/TIME STEP, 
+	 0 ))
+	~	MW/Month
+	~		|
+
+Start Investor Selection Interconnection Capacity[Int,TrasmTech]= DELAY MATERIAL (
+	 New approved Interconnection Capacity projects[Int,TrasmTech], Investor Selection Delay TI\
+		[TrasmTech], 0 ,0)
+	~	MW/Month
+	~		|
+
+Expansion Plan Development IC[Int,TrasmTech]= INTEG (
+	Call for Interconnection Capacity[Int,TrasmTech]-New approved Interconnection Capacity projects\
+		[Int,TrasmTech],
+		0)
+	~	MW
+	~		|
+
+Investor Selection Process IC[Int,TrasmTech]= INTEG (
+	Start Investor Selection Interconnection Capacity[Int,TrasmTech]-Start licensing Interconnection Capacity\
+		[Int,TrasmTech],
+		0)
+	~	MW
+	~		|
+
+Interconnection Capacity[Int]= INTEG (
+	Sum(New Interconnection Capacity[Int,TrasmTech!])+Executed Interconnection Capacity[\
+		Int],
+		Initial Interconnection Capacity[Int])
+	~	MW
+	~		|
+
+HydroDam Generation[HydroDam]=
+	Sum(Ideal Dispatch[f0,Hour!,HydroDam])*Days per month
+	~	MWh/Month
+	~	IF THEN ELSE( Total Hydro Storage Capacity[HydroDam]=0 , 0, Dispatch by \
+		Tech per Day[THydroDam]*Days per month)
+	|
+
+Additional Grid Need for Exports[ForecastYear,Hour,Zone]=
+	IF THEN ELSE(Adjusted Interconnection Capacity[ForecastYear,Zone]=0,
+	  0,
+	IF THEN ELSE(Surplus by Zone[ForecastYear,Hour,Zone]+Grid Security Margin-Adjusted Interconnection Capacity\
+		[ForecastYear,Zone]
+	                < Min Grid Capacity
+	         ,0
+	         ,Max(0,
+	            (Surplus by Zone[ForecastYear,Hour,Zone]+Grid Security Margin-Adjusted Interconnection Capacity\
+		[ForecastYear,Zone])))
+	)
+	~	MWh
+	~	IF THEN ELSE(Sum(Expected Interconnection \
+		Capacity[ForecastYear,Int!]*Interconnection Pairs Cases[Int!,Zone])=0,
+		  0,
+		  IF THEN ELSE(Surplus by Zone[ForecastYear,Hour,Zone]+Grid Security Margin-
+		               Sum(Expected Interconnection \
+		Capacity[ForecastYear,Int!]*Interconnection Pairs \
+		Cases[Int!,Zone])+Adjusted Interconnection Capacity[Zone]
+		                < Min Grid Capacity
+		         ,0
+		         ,Max(0,
+		            (Surplus by Zone[ForecastYear,Hour,Zone])+Grid Security \
+		Margin-Sum(Expected Interconnection \
+		Capacity[ForecastYear,Int!]*Interconnection Pairs Cases
+		[Int!,Zone])+Adjusted Interconnection Capacity[Zone]
+		)))
+	|
+
+Additional Grid Need for Imports[ForecastYear,Hour,Zone]=
+	IF THEN ELSE(Sum(Expected Interconnection Capacity[ForecastYear,Int!]*Interconnection Pairs Cases\
+		[Int!,Zone])=0,0,
+	  IF THEN ELSE(Deficit by Zone[ForecastYear,Hour,Zone]+Grid Security Margin-Adjusted Interconnection Capacity\
+		[ForecastYear,Zone]
+	               < Min Grid Capacity,
+	    0,
+	    Max(0,(Deficit by Zone[ForecastYear,Hour,Zone])+Grid Security Margin-
+	           Adjusted Interconnection Capacity[ForecastYear,Zone])))
+	~	MWh
+	~	IF THEN ELSE(Sum(Expected Interconnection \
+		Capacity[ForecastYear,Int!]*Interconnection Pairs Cases[Int!,Zone])=0,0,
+		  IF THEN ELSE(Deficit by Zone[ForecastYear,Hour,Zone]+Grid Security Margin-
+		               Sum(Expected Interconnection \
+		Capacity[ForecastYear,Int!]*Interconnection Pairs \
+		Cases[Int!,Zone])+Adjusted Interconnection Capacity[Zone]
+		               < Min Grid Capacity,
+		    0,
+		    Max(0,(Deficit by Zone[ForecastYear,Hour,Zone])+Grid Security Margin-
+		           Sum(Expected Interconnection Capacity[ForecastYear,Int!]*Interconnection \
+		Pairs Cases[Int!,Zone])+Adjusted Interconnection Capacity[Zone])
+		))
+	|
+
+Interconnection Capacity to Install=
+	(Interconnection Lines*Max Grid Capacity)*(1-Switch Dispatch)
+	
+	+
+	
+	(IF THEN ELSE(Sum(Accumulated Transmission for Interconnection delays[TrasmTech!])=0\
+		,
+	
+	Sum(Additional Grid Need for Congestion[f0,Int!])
+	,
+	
+	Sum(Additional Grid Need for Congestion[f7,Int!])
+	))*Switch Dispatch
+	~	MW
+	~		|
+
+Needed Grid Capacity[ForecastYear,Zone]=
+	VMAX((Deficit by Zone[ForecastYear,Hour!,Zone]+Surplus by Zone[ForecastYear,Hour!,Zone\
+		])+Grid Security Margin)
+	~	MW
+	~	VMAX((Deficit by Zone[ForecastYear,Hour!,Zone]+Surplus by \
+		Zone[ForecastYear,Hour!,Zone])+Grid Security Margin)
+	|
+
+New approved Transmission for Interconnections projects=
+	IF THEN ELSE(Expansion Plan Delay TI[Lines]=0,
+	Call for Interconnections km,
+	 IF THEN ELSE(MODULO(Time,Expansion Plan Delay TI[Lines])=0 , 
+	 Expansion Plan Development TI/TIME STEP, 
+	 0 ))
+	~	km/Month
+	~		|
+
+Start licensing Transmission for Interconnections= DELAY MATERIAL (
+	Start Investor Selection Transmission for Interconnections,Investor Selection Delay TI\
+		[Lines],0,0)
+	~	km/Month
+	~		|
+
+Interconnection Lines=
+	(IF THEN ELSE(Sum(Accumulated Transmission for Interconnection delays[TrasmTech!])=0\
+		,
+	
+	INTEGER(Size of Needed Grid[f0]/Max Grid Capacity) +
+	IF THEN ELSE(MODULO(Size of Needed Grid[f0],Max Grid Capacity)>=Min Grid Capacity, 1\
+		, 0)
+	
+	,
+	
+	INTEGER(Size of Needed Grid[f7]/Max Grid Capacity) +
+	IF THEN ELSE(MODULO(Size of Needed Grid[f7],Max Grid Capacity)>=Min Grid Capacity, 1\
+		, 0)
+	
+	))*(1-Switch Dispatch)
+	
+	+
+	(IF THEN ELSE(Sum(Accumulated Transmission for Interconnection delays[TrasmTech!])=0\
+		,
+	
+	INTEGER(Sum(Additional Grid Need for Congestion[f0,Int!])/Max Grid Capacity) +
+	IF THEN ELSE(MODULO(Sum(Additional Grid Need for Congestion[f0,Int!]),Max Grid Capacity\
+		)>=Min Grid Capacity, 1, 0)
+	
+	,
+	
+	INTEGER(Sum(Additional Grid Need for Congestion[f7,Int!])/Max Grid Capacity) +
+	IF THEN ELSE(MODULO(Sum(Additional Grid Need for Congestion[f7,Int!]),Max Grid Capacity\
+		)>=Min Grid Capacity, 1, 0)
+	
+	))*Switch Dispatch
+	~	lines
+	~		|
+
+Interconnection Case[Int,Zone]=
+	IF THEN ELSE(Interconnection Capacity to Install=0,0,
+	 IF THEN ELSE(Sum(Accumulated Transmission for Interconnection delays[TrasmTech!])=0\
+		,
+	
+	  IF THEN ELSE(
+	  Interconnection Pairs Cases[Int,Z1]=Pair of Zones to Interconnect by Zone[f0,Z1]:AND:
+	  Interconnection Pairs Cases[Int,Z2]=Pair of Zones to Interconnect by Zone[f0,Z2]:AND:
+	  Interconnection Pairs Cases[Int,Z3]=Pair of Zones to Interconnect by Zone[f0,Z3]:AND:
+	  Interconnection Pairs Cases[Int,Z4]=Pair of Zones to Interconnect by Zone[f0,Z4]:AND:
+	  Interconnection Pairs Cases[Int,Z5]=Pair of Zones to Interconnect by Zone[f0,Z5]:AND:
+	  Interconnection Pairs Cases[Int,Z6]=Pair of Zones to Interconnect by Zone[f0,Z6]
+	  , 
+	  Interconnection Zones by Case[Int,Zone]
+	  , 
+	  0)
+	
+	 ,
+	
+	  IF THEN ELSE(Interconnection Pairs Cases[Int,Z1]=Pair of Zones to Interconnect by Zone\
+		[f7,Z1]:AND:
+	  Interconnection Pairs Cases[Int,Z2]=Pair of Zones to Interconnect by Zone[f7,Z2]:AND:
+	  Interconnection Pairs Cases[Int,Z3]=Pair of Zones to Interconnect by Zone[f7,Z3]:AND:
+	  Interconnection Pairs Cases[Int,Z4]=Pair of Zones to Interconnect by Zone[f7,Z4]:AND:
+	  Interconnection Pairs Cases[Int,Z5]=Pair of Zones to Interconnect by Zone[f7,Z5]:AND:
+	  Interconnection Pairs Cases[Int,Z6]=Pair of Zones to Interconnect by Zone[f7,Z6]
+	  , 
+	  Interconnection Zones by Case[Int,Zone]
+	  , 
+	  0)
+	 )
+	)
+	~	Dmnl
+	~		|
+
+Imbalance by Zone[ForecastYear,Hour,Zone]=
+	(Ideal Dispatch by Zone[ForecastYear,Hour,Zone]-Residual Demand by zone[ForecastYear\
+		,Hour,Zone])*(1-Switch Dispatch)
+	+(Congested Dispatch by Zone[ForecastYear,Hour,Zone]-Residual Demand by zone[ForecastYear\
+		,Hour,Zone])*Switch Dispatch
+	~	MWh
+	~		|
+
+Additional Grid Need for Congestion[ForecastYear,Int]=
+	IF THEN ELSE(
+	  Expected Interconnection Capacity[ForecastYear,Int] = 0,
+	  0,
+	  IF THEN ELSE(
+	    Max Interconnection Capacity[Int,ForecastYear]*1.3 - Expected Interconnection Capacity\
+		[ForecastYear,Int] < Min Grid Capacity,
+	    0,
+	    Max(0, (Max Interconnection Capacity[Int,ForecastYear] - Expected Interconnection Capacity\
+		[ForecastYear,Int]) * 1.3)
+	  ) )
+	~	MW
+	~	IF THEN ELSE(Expected Interconnection Capacity[ForecastYear,Zone]=0,0,
+		  IF THEN ELSE(Max Interconnection Capacity[Int]+Grid Security Margin-Expected \
+		Interconnection Capacity[ForecastYear,Zone]< Min Grid Capacity
+		         ,0
+		         ,Max(0,(Max Interconnection Capacity[Int]+
+		              Grid Security Margin)-Expected Interconnection \
+		Capacity[ForecastYear,Zone])))
+	|
+
+Congestion Tariff[ForecastYear]=
+	IF THEN ELSE(Sum(Congestion Cost by Zone[ForecastYear,Hour!,Zone!])<=0,
+	  0,
+	  Sum(Congestion Cost by Zone[ForecastYear,Hour!,Zone!])/
+	      Sum(Daily Residual Demand by Zone[ForecastYear,Zone!]))
+	~	USD/MWh
+	~		|
+
+Call for Interconnections km=
+	Sum(Interconnection Lenght Active Case[Int!])*Interconnection Lines
+	*(1/TIME STEP)
+	~	km/Month
+	~		|
+
+Zones to Expand Interconnection[Int]=
+	VMAX(Interconnection Case[Int,Zone!]*Interconnection Zones by Case[Int,Zone!])
+	~	Dmnl
+	~		|
+
+Selected Importing Zone[ForecastYear,Zone]=
+	IF THEN ELSE(Imports Grid Need Rank[ForecastYear,Zone]=1:AND:Imports Grid Need by Zone\
+		[ForecastYear,Zone]>0, 1 , 0 )
+	~	Dmnl
+	~		|
+
+Min Grid Need[ForecastYear,Hour]=
+	Min(Max Grid Need for Exports[ForecastYear,Hour],Max Grid Need for Imports[ForecastYear\
+		,Hour])
+	~	MWh
+	~		|
+
+Electricity Tariff[EnergyUsers,Zone]=
+	IF THEN ELSE( Generation Tariff[f0,Zone]=0 , 0 , 
+	
+	
+	(1-Tariff Subsidies[EnergyUsers])*(Generation Tariff[f0,Zone]+
+	Transmission Tariff[f0]+
+	Congestion Tariff[f0])
+	/(Other Tariff Components[EnergyUsers,Zone])
+	)
+	~	USD/MWh
+	~	IF THEN ELSE( Generation Tariff[f0,Zone,Dispatch]=0 , 0 , 
+		
+		
+		(1-Tariff Subsidies[EnergyUsers])*
+		
+		(
+		(Generation Tariff[f0,Zone,Dispatch]+
+		Transmission Tariff[f0,Dispatch]+
+		Congestion Tariff[f0,Dispatch])/(1-Other Tariff Components[EnergyUsers,Zone]))
+		)
+	|
+
+Start Investor Selection Transmission for Interconnections= DELAY MATERIAL (
+	 New approved Transmission for Interconnections projects,Public Tender Delay TI,0,0)
+	~	km/Month
+	~		|
+
+Congestion Cost by Zone[ForecastYear,Hour,Zone]=
+	(Zonal Price[ForecastYear,Hour,Zone]*Residual Demand by zone[ForecastYear,Hour,Zone]\
+		)
+	-
+	(Ideal Dispatch Price[ForecastYear,Hour]*Residual Demand by zone[ForecastYear,Hour,Zone\
+		])
+	~	USD/MWh
+	~		|
+
+Exports Grid Need Rank[ForecastYear,Zone]=
+	VECTOR RANK(Exports Grid Need by Zone[ForecastYear,Zone], 0)
+	~	Dmnl
+	~	1 es la mayor
+	|
+
+Imports Grid Need by Zone[ForecastYear,Zone]=
+	VMAX(Imports Grid Need by Hour[ForecastYear,Hour!,Zone])
+	~	MWh
+	~		|
+
+Deficit by Zone[ForecastYear,Hour,Zone]=
+	Max(-Imbalance by Zone[ForecastYear,Hour,Zone],0)
+	~	MWh
+	~		|
+
+DER Desired Investment by Price[EnergyUsers,Zone,TDERBESS]=
+	Max(0,
+	 (Residual Demand per Hour[EnergyUsers,Zone,TDERBESS]
+	       *Investment Factor by Price Margin[EnergyUsers,Zone])
+	)
+	~	MW
+	~		|
+
+Pair of Zones to Interconnect by Zone[ForecastYear,Zone]=
+	IF THEN ELSE((Selected Exporting Zone[ForecastYear,Zone] + Selected Importing Zone[ForecastYear\
+		,Zone]) = 0,
+	 0,
+	 (Selected Exporting Zone[ForecastYear,Zone] + Selected Importing Zone[ForecastYear,\
+		Zone])
+	    /(Selected Exporting Zone[ForecastYear,Zone] + Selected Importing Zone[ForecastYear\
+		,Zone]))
+	~	Dmnl
+	~	Selected Exporting Zone[Zone], Selected Importing Zone[Zone]: una de las 2 es 0
+		IF THEN ELSE(Sum(Imports Grid Need by Zone[Zone!])=0:AND:Sum(Exports Grid Need by \
+		Zone[Zone!])>0,(Selected Importing Zone
+		[Zone]*0)+Selected Exporting Zone[Zone],(Selected Exporting \
+		Zone[Zone]+Selected Importing Zone[Zone]))
+	|
+
+Total Transmission=
+	Sum(Transmission for Demand Connection[Zone!]) +
+	Sum(Transmission for Generation Connection[Zone!])+
+	Transmission for Interconnection km
+	~	km
+	~		|
+
+Hour of Max Grid Need[ForecastYear,Hour]=
+	VECTOR RANK(Min Grid Need[ForecastYear,Hour], 0)
+	~	Dmnl
+	~		|
+
+Selected Exporting Zone[ForecastYear,Zone]=
+	IF THEN ELSE(Exports Grid Need Rank[ForecastYear,Zone]=1:AND:
+	             Exports Grid Need by Zone[ForecastYear,Zone]>0, 
+	  1 , 
+	  0 )
+	~	Dmnl
+	~		|
+
+Investment Factor by Price Margin[EnergyUsers,Zone]=
+	IF THEN ELSE(DER Price Margin[EnergyUsers,Zone]=0,0,
+	DER Investment by Profit Curve Parameters[m]+
+	 (DER Investment by Profit Curve Parameters[r]
+	  /(1+EXP(
+	         (-DER Investment by Profit Curve Parameters[c1])*
+	         (DER Price Margin[EnergyUsers,Zone]
+	              -DER Investment by Profit Curve Parameters[c2])))))
+	~	Dmnl
+	~		|
+
+Size of Needed Grid[ForecastYear]=
+	IF THEN ELSE(
+	VMAX(Imports Grid Need by Zone[ForecastYear,Zone!])=0:AND:VMAX(Exports Grid Need by Zone\
+		[ForecastYear,Zone!])>0,
+	VMAX(Exports Grid Need by Zone[ForecastYear,Zone!]),Min(VMAX(Exports Grid Need by Zone\
+		[ForecastYear,Zone!]),VMAX(Imports Grid Need by Zone[ForecastYear,Zone!])))
+	~	MWh
+	~		|
+
+Expansion Plan Development TI= INTEG (
+	Call for Interconnections km-New approved Transmission for Interconnections projects\
+		,
+		0)
+	~	km
+	~		|
+
+Weighted Mean Price[ForecastYear,Zone]=
+	IF THEN ELSE(Sum(Residual Demand by zone[ForecastYear,Hour!,Zone]) = 0, 0,
+	
+	("Zonal Prices?" * 
+	  Sum(Zonal Price[ForecastYear,Hour!,Zone] * 
+	  Residual Demand by zone[ForecastYear,Hour!,Zone])
+	  /
+	  Sum(Residual Demand by zone[ForecastYear,Hour!,Zone])
+	) 
+	+
+	( (1-"Zonal Prices?") * 
+	   Sum(Ideal Dispatch Price[ForecastYear,Hour!] * 
+	   Residual Demand by zone[ForecastYear,Hour!,Zone!])
+	  /
+	  Sum(Residual Demand by zone[ForecastYear,Hour!,Zone!])
+	)
+	)
+	~	USD/MWh
+	~		|
+
+Exports Grid Need by Hour[ForecastYear,Hour,Zone]=
+	IF THEN ELSE(Hour of Max Grid Need[ForecastYear,Hour]=1:OR:Max Grid Need for Exports\
+		[ForecastYear,Hour]>0, Additional Grid Need for Exports[ForecastYear,Hour,Zone], 0)
+	~	MW
+	~		|
+
+Exports Grid Need by Zone[ForecastYear,Zone]=
+	VMAX(Exports Grid Need by Hour[ForecastYear,Hour!,Zone])
+	~	MWh
+	~		|
+
+New Interconnection capacity between zones[Int]=
+	IF THEN ELSE(Interconnection Lenght Active Case[Int]>0,
+	 ((Interconnection Lenght Active Case[Int]
+	     *Interconnection Lines)
+	     /Interconnection Lenght Active Case[Int])
+	    *Max Grid Capacity
+	,
+	0)
+	~	MW
+	~		|
+
+Imports Grid Need by Hour[ForecastYear,Hour,Zone]=
+	IF THEN ELSE(Hour of Max Grid Need[ForecastYear,Hour]=1:OR:Max Grid Need for Imports\
+		[ForecastYear,Hour]>0, 
+	Additional Grid Need for Imports[ForecastYear,Hour,Zone]
+	, 0)
+	~	MW
+	~		|
+
+Investor Selection Process TI= INTEG (
+	Start Investor Selection Transmission for Interconnections-Start licensing Transmission for Interconnections\
+		,
+		0)
+	~	km
+	~		|
+
+Zonal Price Range[ForecastYear,Hour]=
+	VMAX(Zonal Price[ForecastYear,Hour,Zone!])-vmin(Zonal Price[ForecastYear,Hour,Zone!]\
+		)
+	~	USD/MWh
+	~		|
+
+Max Grid Need for Imports[ForecastYear,Hour]=
+	VMAX(Additional Grid Need for Imports[ForecastYear,Hour,Zone!])
+	~	MW
+	~		|
+
+Max DER Price Margin=
+	VMAX(DER Price Margin[EnergyUsers!,Zone!])
+	~	USD/MWh
+	~		|
+
+Max Grid Need for Exports[ForecastYear,Hour]=
+	VMAX(Additional Grid Need for Exports[ForecastYear,Hour,Zone!])
+	~	MW
+	~		|
+
+Tariff Expectation[EnergyUsers,Zone]=
+	SMOOTH(Electricity Tariff[EnergyUsers,Zone],Time to Form Price Expectation)
+	~	USD/MWh
+	~	SMOOTH(IF THEN ELSE(Sum(Residual Demand by zone[Hour!,Zone])=0, 0, 
+		  IF THEN ELSE("Zonal Prices?"=0,
+		    Weighted Sum of Prices[Zone] / Sum(Sum of Residual Demand by Zone[Zone!]),
+		   (Weighted Sum of Prices[Zone] / Sum of Residual Demand by Zone[Zone])
+		  )),12)
+	|
+
+Transmission in licensing process TI= INTEG (
+	Start licensing Transmission for Interconnections-Start Construction Transmission for Interconnections\
+		,
+		0)
+	~	km
+	~		|
+
+Transmission Public Tender Preparation TI= INTEG (
+	New approved Transmission for Interconnections projects-Start Investor Selection Transmission for Interconnections\
+		,
+		0)
+	~	km
+	~		|
+
+Surplus by Zone[ForecastYear,Hour,Zone]=
+	Max(Imbalance by Zone[ForecastYear,Hour,Zone],0)
+	~	MWh
+	~		|
+
+Imports Grid Need Rank[ForecastYear,Zone]=
+	VECTOR RANK(Imports Grid Need by Zone[ForecastYear,Zone], 0)
+	~	Dmnl
+	~		|
+
+Total New DER=
+	Sum(Total New DER by Zone[Zone!])
+	~	MW/Month
+	~		|
+
+Transmission Tariff[f0]=
+	(Transmission Cost per km per day*Total Transmission)
+	/Sum(Residual Demand by zone[f0,Hour!,Zone!])
+	~	USD/MWh
+	~		|
+
+Residual Demand per Hour[EnergyUsers,Zone,DER]=
+	Residual Demand by zone stratum and hour[EnergyUsers,H12,Zone] ~~|
+Residual Demand per Hour[EnergyUsers,Zone,DERBESS]=
+	Residual Demand by zone stratum and hour[EnergyUsers,H19,Zone]
+	~	MWh
+	~		|
+
+Daily Demand[ForecastYear]=
+	Sum(National demand[ForecastYear,Hour!])
+	~	MWh
+	~		|
+
+Peak Hour Ranking[ForecastYear,Hour]=
+	VECTOR RANK(National hourly demand[ForecastYear,Hour], 0 )
+	~	Dmnl
+	~		|
+
+Demand by Zone[ForecastYear,Hour,Zone]=
+	National demand[ForecastYear,Hour]*Fraction of Demand by zone and month[ForecastYear\
+		,Zone]
+	~	MWh
+	~	ForecastYear,Hour,Zone
+		National demand CREE[Hour]*Demand by zone and month CREE[ForecastYear,Zone]
+		Demand Curve[Hour,Zone]*Peak Demand by Zone[ForecastYear,Zone]
+	|
+
+New Generation Expansion by Tech[f0,ZTech]=
+	Max(New Inoperative Capacity[ZTech]+Executed Planned Generation[ZTech],0) ~~|
+New Generation Expansion by Tech[f1,ZTech]=
+	Max(New Inoperative Capacity[ZTech]+Executed Planned Generation[ZTech],0) ~~|
+New Generation Expansion by Tech[f3,ZTech]=
+	Max(New Inoperative Capacity[ZTech]+Planned Generation Forecast[f3,ZTech]/TIME STEP,\
+		0) ~~|
+New Generation Expansion by Tech[f5,ZTech]=
+	Max(Start Construction in Generation[ZTech]+Planned Generation Forecast[f5,ZTech]/TIME STEP\
+		,0) ~~|
+New Generation Expansion by Tech[f7,ZTech]=
+	Max(Start licensing in Generation[ZTech]+Planned Generation Forecast[f7,ZTech]/TIME STEP\
+		,0) ~~|
+New Generation Expansion by Tech[f9,ZTech]=
+	Max(New Investment Decisions[ZTech]+Planned Generation Forecast[f9,ZTech]/TIME STEP,\
+		0)
+	~	MW
+	~		|
+
+Power Allocation[ForecastYear]=
+	IF THEN ELSE(Sum(Extra Hydrodam Power[ForecastYear,HydroDam!])<Max Availability Need\
+		[ForecastYear]
+	             :OR:
+	             Only Power Allocation=1,
+	
+	             1,
+	             0)
+	~	Dmnl
+	~		|
+
+Hydro Monthly Availability Factor[HydroDam]=
+	IF THEN ELSE(Total Hydro Generation Capacity[HydroDam]=0,0, 
+	
+	Min(
+	
+	((Hydropower Reservoir[HydroDam]+Inflows[HydroDam])/(Days per month*24)),
+	
+	Total Hydro Generation Capacity[HydroDam]
+	
+	)
+	
+	/Total Hydro Generation Capacity[HydroDam])
+	~	Dmnl
+	~	Min(1,
+		(Hydropower Reservoir)/
+		(Sum(Generation Capacity[Hydro!])*Days per month*24)
+		)
+	|
+
+New proposed Transmission for Generation projects[Zone]=
+	IF THEN ELSE(Accumulated Transmission for Generation delays>0,
+	 New Transmission for Generation by Zone[f7,Zone], 
+	  New Transmission for Generation by Zone[f1,Zone]
+	)
+	~	km/Month
+	~	No de divide por time step, ya está dividido en pasos previos
+		 Accumulated Transmission delays>0:OR:Sum(Accumulated Generation \
+		delays[ZTech!])>0
+	|
+
+Transmission for Demand Connection[Zone]= INTEG (
+	New Need of Transmission for Demand[f0,Zone],
+		Initial Transmission Factor for Demand by Zone[Zone])
+	~	km
+	~		|
+
+Initial Transmission for Generation by Zone[Z1]=
+	(Sum(Generation Capacity[Z1Tech!])/Sum(Generation Capacity[ZTech!]))*Initial Transmission for Generation\
+		 ~~|
+Initial Transmission for Generation by Zone[Z2]=
+	(Sum(Generation Capacity[Z2Tech!])/Sum(Generation Capacity[ZTech!]))*Initial Transmission for Generation\
+		 ~~|
+Initial Transmission for Generation by Zone[Z3]=
+	(Sum(Generation Capacity[Z3Tech!])/Sum(Generation Capacity[ZTech!]))*Initial Transmission for Generation\
+		 ~~|
+Initial Transmission for Generation by Zone[Z4]=
+	(Sum(Generation Capacity[Z4Tech!])/Sum(Generation Capacity[ZTech!]))*Initial Transmission for Generation\
+		 ~~|
+Initial Transmission for Generation by Zone[Z5]=
+	(Sum(Generation Capacity[Z5Tech!])/Sum(Generation Capacity[ZTech!]))*Initial Transmission for Generation\
+		 ~~|
+Initial Transmission for Generation by Zone[Z6]=
+	(Sum(Generation Capacity[Z6Tech!])/Sum(Generation Capacity[ZTech!]))*Initial Transmission for Generation
+	~	km/MW
+	~		|
+
+New Generation Sum=
+	Sum(New Operating Capacity[ZTech!])
+	~	MW
+	~		|
+
+Generation Capacity[ZTech]= INTEG (
+	New Operating Capacity[ZTech]+Executed Planned Generation[ZTech],
+		Initial Generation Capacity[ZTech])
+	~	MW
+	~		|
+
+Potential Generation Expansion[ZTech]= INTEG (
+	New Potential Generation[ZTech]-New Investment Decisions[ZTech],
+		Initial Potential Generation Expansion[ZTech])
+	~	MW
+	~		|
+
+Residual Demand No BESS by Zone[ForecastYear,Hour,Zone]=
+	Max(Demand by Zone[ForecastYear,Hour,Zone]-Total DER Generation by Hour and Zone[Hour\
+		,Zone],0)
+	~	MWh
+	~	Asume que DER no crece
+	|
+
+Residual Demand at 12=
+	Residual demand by hour[H12]
+	~	MWh
+	~		|
+
+Hydro Mean Availability=
+	Sum(Hydro Monthly Availability Factor[HydroDam!]*Generation Capacity[HydroDam!])
+	/
+	Sum(Generation Capacity[HydroDam!])
+	~	Dmnl
+	~	(
+		Sum(HydroDam Availability Factor[Hour!,Z1HydroDam])*Generation Capacity[Z1HydroDam]+
+		Sum(HydroDam Availability Factor[Hour!,Z2HydroDam])*Generation Capacity[Z2HydroDam]+
+		Sum(HydroDam Availability Factor[Hour!,Z3HydroDam])*Generation Capacity[Z3HydroDam]+
+		Sum(HydroDam Availability Factor[Hour!,Z4HydroDam])*Generation Capacity[Z4HydroDam]+
+		Sum(HydroDam Availability Factor[Hour!,Z5HydroDam])*Generation Capacity[Z5HydroDam]+
+		Sum(HydroDam Availability Factor[Hour!,Z6HydroDam])*Generation Capacity[Z6HydroDam]
+		)
+		/
+		(ELMCOUNT(Hour)*Generation Capacity by Tech[THydroDam])
+	|
+
+Residual Demand by zone[ForecastYear,Hour,Zone]=
+	IF THEN ELSE(Ranking of the dispatch[ForecastYear,Hour]<=BESS Duration[Zone],
+	 Max(0,
+	   (Residual Demand No BESS by Zone[ForecastYear,Hour,Zone]+
+	     BESS Capacity[Zone])
+	     ),
+	
+	 IF THEN ELSE(Ranking of the dispatch[ForecastYear,Hour]>(24-BESS Duration[Zone]),
+	   Max(0,
+	    (Residual Demand No BESS by Zone[ForecastYear,Hour,Zone]-
+	      BESS Capacity[Zone])
+	      ),
+	  Residual Demand No BESS by Zone[ForecastYear,Hour,Zone]))
+	~	MWh
+	~	Assumes charge and discharge at full power
+		
+		
+		IF THEN ELSE(Ranking of the dispatch[ForecastYear,Hour]<=BESS Duration[Zone],
+		 Max(0,
+		   (Residual Demand No BESS by Zone[ForecastYear,Hour,Zone]+
+		     ((Sum(BESS available energy[ForecastYear,Hour!,Zone])/24)/BESS \
+		Duration[Zone]))),
+		
+		 IF THEN ELSE(Ranking of the dispatch[ForecastYear,Hour]>(24-BESS \
+		Duration[Zone]):AND:
+		              Ranking of the dispatch[ForecastYear,Hour]<=24,
+		 Max(0,
+		   (Residual Demand No BESS by Zone[ForecastYear,Hour,Zone]-
+		     ((Sum(BESS available energy[ForecastYear,Hour!,Zone])/24)/4))),
+		 Residual Demand No BESS by Zone[ForecastYear,Hour,Zone]))
+	|
+
+Price Difference for BESS[ForecastYear,Zone]=
+	IF THEN ELSE(BESS Duration[Zone]=0,0,
+	 (Sum(Expensive Hour Prices[ForecastYear,Hour!,Zone])/BESS Duration[Zone])-
+	 (Sum(Cheaper Hour Prices[ForecastYear,Hour!,Zone])/BESS Duration[Zone])
+	)
+	~	USD/MWh
+	~		|
+
+Residual Demand[ForecastYear,Hour]=
+	Sum(Residual Demand by zone[ForecastYear,Hour,Zone!])
+	~	MWh
+	~	IF THEN ELSE(Ranking of the dispatch[ForecastYear,Hour]<=BESS Duration[Zone],
+		Max(0,
+		(Residual demand No BESS[ForecastYear,Hour]+(Sum(BESS available \
+		energy[ForecastYear,Hour,Zone!])/BESS Duration[Zone])))
+		,IF THEN ELSE(Ranking of the dispatch[ForecastYear,Hour]>=(25-BESS \
+		Duration[Zone]):AND:Ranking of the dispatch[ForecastYear
+		,Hour]<=24,
+		Max(0,
+		(Residual demand No BESS[ForecastYear,Hour]-Sum(BESS available \
+		energy[ForecastYear,Hour,Zone!])/BESS Duration[Zone]))
+		,Residual demand No BESS[ForecastYear,Hour]))
+	|
+
+Cheaper Hour Prices[ForecastYear,Hour,Zone]=
+	IF THEN ELSE(Ranking of the dispatch[ForecastYear,Hour]<=BESS Duration[Zone],
+	 Ideal Predispatch No BESS Price[ForecastYear,Hour], 
+	 0)
+	~	Dmnl
+	~		|
+
+Max Availability Need[ForecastYear]=
+	Max(VMAX(Extra Availability Need[ForecastYear,Hour!]),0)
+	~	MWh
+	~		|
+
+Availability Margin[Hour]=
+	IF THEN ELSE( Residual Demand[f0,Hour]=0 , 2 ,
+	Min((Total Expected Available Generation[f0,Hour]-Residual Demand[f0,Hour])/Residual Demand\
+		[f0,Hour],2)
+	)
+	~	Dmnl
+	~		|
+
+Available Generation[ForecastYear,Hour,ZTech]=
+	Expected Generation Capacity[ForecastYear,ZTech]*Availability Factor[Hour,ZTech]
+	~	MWh
+	~		|
+
+Imbalance by zone in Ideal Predispatch No BESS[ForecastYear,Hour,Z1]=
+	Sum(Ideal Predispacth No BESS[ForecastYear,Hour,Z1Tech!])-Residual Demand No BESS by Zone\
+		[ForecastYear,Hour,Z1] ~~|
+Imbalance by zone in Ideal Predispatch No BESS[ForecastYear,Hour,Z2]=
+	Sum(Ideal Predispacth No BESS[ForecastYear,Hour,Z2Tech!])-Residual Demand No BESS by Zone\
+		[ForecastYear,Hour,Z2] ~~|
+Imbalance by zone in Ideal Predispatch No BESS[ForecastYear,Hour,Z3]=
+	Sum(Ideal Predispacth No BESS[ForecastYear,Hour,Z3Tech!])-Residual Demand No BESS by Zone\
+		[ForecastYear,Hour,Z3] ~~|
+Imbalance by zone in Ideal Predispatch No BESS[ForecastYear,Hour,Z4]=
+	Sum(Ideal Predispacth No BESS[ForecastYear,Hour,Z4Tech!])-Residual Demand No BESS by Zone\
+		[ForecastYear,Hour,Z4] ~~|
+Imbalance by zone in Ideal Predispatch No BESS[ForecastYear,Hour,Z5]=
+	Sum(Ideal Predispacth No BESS[ForecastYear,Hour,Z5Tech!])-Residual Demand No BESS by Zone\
+		[ForecastYear,Hour,Z5] ~~|
+Imbalance by zone in Ideal Predispatch No BESS[ForecastYear,Hour,Z6]=
+	Sum(Ideal Predispacth No BESS[ForecastYear,Hour,Z6Tech!])-Residual Demand No BESS by Zone\
+		[ForecastYear,Hour,Z6]
+	~	MWh
+	~		|
+
+Generation Factor Isolated[ForecastYear,Hour,ZTech]=
+	IF THEN ELSE( Isolated Dispatch[ForecastYear,Hour,ZTech]=0, 0, 
+	Isolated Dispatch[ForecastYear,Hour,ZTech]/Expected Generation Capacity[ForecastYear\
+		,ZTech])
+	~	Dmnl
+	~		|
+
+Ranking of the dispatch[ForecastYear,Hour]=
+	VECTOR RANK(Ideal Predispatch No BESS Price[ForecastYear,Hour],1)
+	~	Dmnl
+	~		|
+
+Hour of Max Availability Need[ForecastYear,Hour]=
+	IF THEN ELSE(Rank of Availability Need[ForecastYear,Hour]=1, 1, 0)
+	~	Dmnl
+	~		|
+
+Disabled Transmission for Generation Connection=
+	Sum(Disabled Transmission for Generation by Tech[ZTech!])
+	~	km/Month
+	~	(IF THEN ELSE((Planned Generation Start[ZTech]+New Operating \
+		Capacity[ZTech])*Transmission Factor for Generation[ZTech
+		]<0,
+		(Planned Generation Start[ZTech]+New Operating Capacity[ZTech])*Transmission Factor \
+		for Generation[ZTech],
+		0))
+		*(-1)*(1/TIME STEP)
+	|
+
+Ideal Dispatch by Zone[ForecastYear,Hour,Z1]=
+	Sum(Ideal Dispatch Vensim[ForecastYear,Hour,Z1Tech!]) ~~|
+Ideal Dispatch by Zone[ForecastYear,Hour,Z2]=
+	Sum(Ideal Dispatch Vensim[ForecastYear,Hour,Z2Tech!]) ~~|
+Ideal Dispatch by Zone[ForecastYear,Hour,Z3]=
+	Sum(Ideal Dispatch Vensim[ForecastYear,Hour,Z3Tech!]) ~~|
+Ideal Dispatch by Zone[ForecastYear,Hour,Z4]=
+	Sum(Ideal Dispatch Vensim[ForecastYear,Hour,Z4Tech!]) ~~|
+Ideal Dispatch by Zone[ForecastYear,Hour,Z5]=
+	Sum(Ideal Dispatch Vensim[ForecastYear,Hour,Z5Tech!]) ~~|
+Ideal Dispatch by Zone[ForecastYear,Hour,Z6]=
+	Sum(Ideal Dispatch Vensim[ForecastYear,Hour,Z6Tech!])
+	~	MWh
+	~		|
+
+Used Transmission for Generation Connection= INTEG (
+	New Transmission for Generation Connection-Disabled Transmission for Generation Connection\
+		,
+		Initial Transmission for Generation)
+	~	km
+	~		|
+
+Expensive Hour Prices[ForecastYear,Hour,Zone]=
+	IF THEN ELSE(Ranking of the dispatch[ForecastYear,Hour]>(24-BESS Duration[Zone]),
+	  Ideal Predispatch No BESS Price[ForecastYear,Hour]
+	,0)
+	~	Dmnl
+	~	IF THEN ELSE(Ranking of the dispatch[Hour]<=5:OR: Ranking of the \
+		dispatch[Hour]>=20,Predispatch Price[Hour]-ABS(Sum(Offer price taking into \
+		account the availability of the water[HydroDam!])/6),1)
+	|
+
+Power Availability Allocation by Tech[ForecastYear,ZTech]=
+	Only RES Investment*Power Availability Allocation by Tech RES[ForecastYear,ZTech]
+	+
+	(1-Only RES Investment)*Power Availability Allocation by Tech ALL[ForecastYear,ZTech\
+		]
+	~	MW
+	~		|
+
+Predispatch No BESS by Tech[ForecastYear,Hour,TBiomass]=
+	Sum(Ideal Predispacth No BESS[ForecastYear,Hour,Biomass!]) ~~|
+Predispatch No BESS by Tech[ForecastYear,Hour,TWindOnS]=
+	Sum(Ideal Predispacth No BESS[ForecastYear,Hour,WindOnS!]) ~~|
+Predispatch No BESS by Tech[ForecastYear,Hour,TWindOffS]=
+	Sum(Ideal Predispacth No BESS[ForecastYear,Hour,WindOffS!]) ~~|
+Predispatch No BESS by Tech[ForecastYear,Hour,TPV]=
+	Sum(Ideal Predispacth No BESS[ForecastYear,Hour,PV!]) ~~|
+Predispatch No BESS by Tech[ForecastYear,Hour,THRoR]=
+	Sum(Ideal Predispacth No BESS[ForecastYear,Hour,HRoR!]) ~~|
+Predispatch No BESS by Tech[ForecastYear,Hour,THydroDam]=
+	Sum(Ideal Predispacth No BESS[ForecastYear,Hour,HydroDam!]) ~~|
+Predispatch No BESS by Tech[ForecastYear,Hour,TThermo1]=
+	Sum(Ideal Predispacth No BESS[ForecastYear,Hour,Thermo1!]) ~~|
+Predispatch No BESS by Tech[ForecastYear,Hour,TThermo2]=
+	Sum(Ideal Predispacth No BESS[ForecastYear,Hour,Thermo2!]) ~~|
+Predispatch No BESS by Tech[ForecastYear,Hour,TGeothermal]=
+	Sum(Ideal Predispacth No BESS[ForecastYear,Hour,Geothermal!]) ~~|
+Predispatch No BESS by Tech[ForecastYear,Hour,TPVBESSOp1]=
+	Sum(Ideal Predispacth No BESS[ForecastYear,Hour,PVBESSOp1!]) ~~|
+Predispatch No BESS by Tech[ForecastYear,Hour,TPVBESSOp2]=
+	Sum(Ideal Predispacth No BESS[ForecastYear,Hour,PVBESSOp2!]) ~~|
+Predispatch No BESS by Tech[ForecastYear,Hour,TOther1]=
+	Sum(Ideal Predispacth No BESS[ForecastYear,Hour,Other1!]) ~~|
+Predispatch No BESS by Tech[ForecastYear,Hour,TOther2]=
+	Sum(Ideal Predispacth No BESS[ForecastYear,Hour,Other2!]) ~~|
+Predispatch No BESS by Tech[ForecastYear,Hour,TOther3]=
+	Sum(Ideal Predispacth No BESS[ForecastYear,Hour,Other3!])
+	~	MWh
+	~		|
+
+Ideal Predispatch No BESS Price[ForecastYear,Hour]=
+	VMAX(Adjusted Offer Price Ideal Predispatch No BESS[ForecastYear,Hour,ZTech!])
+	~	USD/MWh
+	~		|
+
+Generation Factor Ideal Predispatch No BESS[ForecastYear,Hour,ZTech]=
+	IF THEN ELSE(Ideal Predispacth No BESS[ForecastYear,Hour,ZTech]=0, 0,Ideal Predispacth No BESS\
+		[ForecastYear,Hour,ZTech]/Expected Generation Capacity[ForecastYear,ZTech])
+	~	Dmnl
+	~		|
+
+Rank of Availability Need[ForecastYear,Hour]=
+	VECTOR RANK( Extra Availability Need[ForecastYear,Hour],0)
+	~	Dmnl
+	~		|
+
+Ideal Dispatch Vensim[ForecastYear,Hour,ZTech]=
+	ALLOCATE BY PRIORITY(
+	Available Generation[ForecastYear,Hour,ZTech], 
+	Dispatch Priority[ZTech], 
+	ELMCOUNT(ZTech),
+	Width,
+	Residual Demand[ForecastYear,Hour])
+	~	MWh
+	~		|
+
+Ideal Predispacth No BESS[ForecastYear,Hour,ZTech]=
+	ALLOCATE BY PRIORITY(
+	Available Generation[ForecastYear,Hour,ZTech], 
+	Dispatch Priority[ZTech], 
+	ELMCOUNT(ZTech),
+	Width,
+	Residual demand No BESS[ForecastYear,Hour])
+	~	MWh
+	~		|
+
+Residual demand No BESS[ForecastYear,Hour]=
+	Sum(Residual Demand No BESS by Zone[ForecastYear,Hour,Zone!])
+	~	MWh
+	~		|
+
+Potential Market Fraction[EnergyUsers,Zone,DER]=
+	IF THEN ELSE(Residual Demand per Hour[EnergyUsers,Zone,DER]
+	             <=0,0,
+	
+	   Residual Demand per Hour[EnergyUsers,Zone,DER]
+	   /(Demand by Zone[f0,H12,Zone]*Fraction of Demand by User Type[EnergyUsers])) ~~|
+Potential Market Fraction[EnergyUsers,Zone,DERBESS]=
+	IF THEN ELSE(Residual Demand per Hour[EnergyUsers,Zone,DERBESS]
+	             <=0,0,
+	
+	   Residual Demand per Hour[EnergyUsers,Zone,DERBESS]
+	   /(Demand by Zone[f0,H19,Zone]*Fraction of Demand by User Type[EnergyUsers]))
+	~	Dmnl
+	~	Demand by Zone[f0,H12,Zone]=0
+		             :OR:Fraction of Demand by User Type[EnergyUsers]=0
+		             :OR:
+		
+		IF THEN ELSE(Demand by Zone[H12,Zone]=0,0,
+		Sum(Potential Market per user at 12 PM[EnergyUsers!,Zone])/Demand by \
+		Zone[H12,Zone])
+	|
+
+Total Expected Available Generation[ForecastYear,Hour]=
+	Sum((Expected Generation Capacity[ForecastYear,All!])*Availability Factor[Hour,All!]\
+		)
+	~	MWh
+	~		|
+
+Potential Availability in Hour of Max Need[ForecastYear,ZTech]=
+	Max(0,Mean Availability Factor Hour of Max Need[ForecastYear,ZTech]*Potential Generation Expansion\
+		[ZTech])
+	~	MW
+	~		|
+
+New Need of Transmission for Demand[ForecastYear,Zone]=
+	Max(Transmission for Demand[ForecastYear,Zone]-Transmission for Demand Connection[Zone\
+		],0)
+	~	km/Month
+	~	(IF THEN ELSE(MODULO(Time,1)=0,Max(Transmission Need for \
+		Demand-Transmission for Demand Connection,0),0)/TIME STEP)
+	|
+
+Peak Residual Demand[ForecastYear]=
+	VMAX(Residual Demand[ForecastYear,Hour!])
+	~	MWh
+	~		|
+
+Isolated Dispatch[ForecastYear,Hour,Z1Tech]=
+	ALLOCATE BY PRIORITY(
+	Available Generation[ForecastYear,Hour,Z1Tech], 
+	Dispatch Priority[Z1Tech], 
+	ELMCOUNT(Z1Tech),
+	Width, 
+	Residual Demand by zone[ForecastYear,Hour,Z1]) ~~|
+Isolated Dispatch[ForecastYear,Hour,Z2Tech]=
+	ALLOCATE BY PRIORITY(
+	Available Generation[ForecastYear,Hour,Z2Tech], 
+	Dispatch Priority[Z2Tech], 
+	ELMCOUNT(Z2Tech),
+	Width,
+	Residual Demand by zone[ForecastYear,Hour,Z2]) ~~|
+Isolated Dispatch[ForecastYear,Hour,Z3Tech]=
+	ALLOCATE BY PRIORITY(
+	Available Generation[ForecastYear,Hour,Z3Tech], 
+	Dispatch Priority[Z3Tech], 
+	ELMCOUNT(Z3Tech),
+	Width,
+	Residual Demand by zone[ForecastYear,Hour,Z3]) ~~|
+Isolated Dispatch[ForecastYear,Hour,Z4Tech]=
+	ALLOCATE BY PRIORITY(
+	Available Generation[ForecastYear,Hour,Z4Tech], 
+	Dispatch Priority[Z4Tech], 
+	ELMCOUNT(Z4Tech),
+	Width,
+	Residual Demand by zone[ForecastYear,Hour,Z4]) ~~|
+Isolated Dispatch[ForecastYear,Hour,Z5Tech]=
+	ALLOCATE BY PRIORITY(
+	Available Generation[ForecastYear,Hour,Z5Tech], 
+	Dispatch Priority[Z5Tech], 
+	ELMCOUNT(Z5Tech),
+	Width,
+	Residual Demand by zone[ForecastYear,Hour,Z5]) ~~|
+Isolated Dispatch[ForecastYear,Hour,Z6Tech]=
+	ALLOCATE BY PRIORITY(
+	Available Generation[ForecastYear,Hour,Z6Tech], 
+	Dispatch Priority[Z6Tech], 
+	ELMCOUNT(Z6Tech),
+	Width,
+	Residual Demand by zone[ForecastYear,Hour,Z6])
+	~	MWh
+	~		|
+
+Isolated Zone Prices[ForecastYear,Hour,Z1]=
+	VMAX(Adjusted Offer Price Isolated Dispatch[ForecastYear,Hour,Z1Tech!]) ~~|
+Isolated Zone Prices[ForecastYear,Hour,Z2]=
+	VMAX(Adjusted Offer Price Isolated Dispatch[ForecastYear,Hour,Z2Tech!]) ~~|
+Isolated Zone Prices[ForecastYear,Hour,Z3]=
+	VMAX(Adjusted Offer Price Isolated Dispatch[ForecastYear,Hour,Z3Tech!]) ~~|
+Isolated Zone Prices[ForecastYear,Hour,Z4]=
+	VMAX(Adjusted Offer Price Isolated Dispatch[ForecastYear,Hour,Z4Tech!]) ~~|
+Isolated Zone Prices[ForecastYear,Hour,Z5]=
+	VMAX(Adjusted Offer Price Isolated Dispatch[ForecastYear,Hour,Z5Tech!]) ~~|
+Isolated Zone Prices[ForecastYear,Hour,Z6]=
+	VMAX(Adjusted Offer Price Isolated Dispatch[ForecastYear,Hour,Z6Tech!])
+	~	USD/MWh
+	~		|
+
+Unmet Demand without BESS[Hour]=
+	Residual demand No BESS[f0,Hour]-Sum(Ideal Predispacth No BESS[f0,Hour,ZTech!])
+	~	MWh
+	~		|
+
+Mean Load Factor by Tech[ForecastYear,TBiomass]=
+	IF THEN ELSE(Sum(Ideal Dispatch Vensim[ForecastYear,Hour!,Biomass!])=0, 0,
+	  (Sum(Ideal Dispatch Vensim[ForecastYear,Hour!,Biomass!])
+	/Sum(Expected Generation Capacity[ForecastYear,Biomass!]*24))
+	) ~~|
+Mean Load Factor by Tech[ForecastYear,TWindOnS]=
+	IF THEN ELSE(Sum(Ideal Dispatch Vensim[ForecastYear,Hour!,WindOnS!])=0, 0,
+	Sum(Ideal Dispatch Vensim[ForecastYear,Hour!,WindOnS!])
+	/Sum(Expected Generation Capacity[ForecastYear,WindOnS!]*24)) ~~|
+Mean Load Factor by Tech[ForecastYear,TWindOffS]=
+	IF THEN ELSE(Sum(Ideal Dispatch Vensim[ForecastYear,Hour!,WindOffS!])=0, 0,
+	  (Sum(Ideal Dispatch Vensim[ForecastYear,Hour!,WindOffS!])
+	/Sum(Expected Generation Capacity[ForecastYear,WindOffS!]*24))
+	) ~~|
+Mean Load Factor by Tech[ForecastYear,TPV]=
+	IF THEN ELSE(Sum(Ideal Dispatch Vensim[ForecastYear,Hour!,PV!])=0, 0,
+	Sum(Ideal Dispatch Vensim[ForecastYear,Hour!,PV!])
+	/Sum(Expected Generation Capacity[ForecastYear,PV!]*24)) ~~|
+Mean Load Factor by Tech[ForecastYear,THRoR]=
+	IF THEN ELSE(Sum(Ideal Dispatch Vensim[ForecastYear,Hour!,HRoR!])=0, 0,
+	Sum(Ideal Dispatch Vensim[ForecastYear,Hour!,HRoR!])
+	/Sum(Expected Generation Capacity[ForecastYear,HRoR!]*24)) ~~|
+Mean Load Factor by Tech[ForecastYear,THydroDam]=
+	IF THEN ELSE(Sum(Ideal Dispatch Vensim[ForecastYear,Hour!,HydroDam!])=0, 0,
+	Sum(Ideal Dispatch Vensim[ForecastYear,Hour!,HydroDam!])
+	/Sum(Expected Generation Capacity[ForecastYear,HydroDam!]*24)) ~~|
+Mean Load Factor by Tech[ForecastYear,TThermo1]=
+	IF THEN ELSE(Sum(Ideal Dispatch Vensim[ForecastYear,Hour!,Thermo1!])=0, 0,
+	Sum(Ideal Dispatch Vensim[ForecastYear,Hour!,Thermo1!])
+	/Sum(Expected Generation Capacity[ForecastYear,Thermo1!]*24)) ~~|
+Mean Load Factor by Tech[ForecastYear,TThermo2]=
+	IF THEN ELSE(Sum(Ideal Dispatch Vensim[ForecastYear,Hour!,Thermo2!])=0, 0,
+	Sum(Ideal Dispatch Vensim[ForecastYear,Hour!,Thermo1!])
+	/Sum(Expected Generation Capacity[ForecastYear,Thermo2!]*24)) ~~|
+Mean Load Factor by Tech[ForecastYear,TGeothermal]=
+	IF THEN ELSE(Sum(Ideal Dispatch Vensim[ForecastYear,Hour!,Geothermal!])=0, 0,
+	Sum(Ideal Dispatch Vensim[ForecastYear,Hour!,Geothermal!])
+	/Sum(Expected Generation Capacity[ForecastYear,Geothermal!]*24)) ~~|
+Mean Load Factor by Tech[ForecastYear,TPVBESSOp1]=
+	IF THEN ELSE(Sum(Ideal Dispatch Vensim[ForecastYear,Hour!,PVBESSOp1!])=0, 0,
+	Sum(Ideal Dispatch Vensim[ForecastYear,Hour!,PVBESSOp1!])
+	/Sum(Expected Generation Capacity[ForecastYear,PVBESSOp1!]*24)) ~~|
+Mean Load Factor by Tech[ForecastYear,TPVBESSOp2]=
+	IF THEN ELSE(Sum(Ideal Dispatch Vensim[ForecastYear,Hour!,PVBESSOp2!])=0, 0,
+	Sum(Ideal Dispatch Vensim[ForecastYear,Hour!,PVBESSOp2!])
+	/Sum(Expected Generation Capacity[ForecastYear,PVBESSOp2!]*24)) ~~|
+Mean Load Factor by Tech[ForecastYear,TOther1]=
+	IF THEN ELSE(Sum(Ideal Dispatch Vensim[ForecastYear,Hour!,Other1!])=0, 0,
+	Sum(Ideal Dispatch Vensim[ForecastYear,Hour!,Other1!])
+	/Sum(Expected Generation Capacity[ForecastYear,Other1!]*24)) ~~|
+Mean Load Factor by Tech[ForecastYear,TOther2]=
+	IF THEN ELSE(Sum(Ideal Dispatch Vensim[ForecastYear,Hour!,Other2!])=0, 0,
+	Sum(Ideal Dispatch Vensim[ForecastYear,Hour!,Other2!])
+	/Sum(Expected Generation Capacity[ForecastYear,Other2!]*24)) ~~|
+Mean Load Factor by Tech[ForecastYear,TOther3]=
+	IF THEN ELSE(Sum(Ideal Dispatch Vensim[ForecastYear,Hour!,Other3!])=0, 0,
+	Sum(Ideal Dispatch Vensim[ForecastYear,Hour!,Other3!])
+	/Sum(Expected Generation Capacity[ForecastYear,Other3!]*24))
+	~	Dmnl
+	~	Sum(Generation Factor Ideal \
+		Dispatch[Hour!,Biomass!])/(ELMCOUNT(Hour)*ELMCOUNT(Biomass))
+	|
+
+Mean Availability Factor Hour of Max Need[ForecastYear,ZTech]=
+	Sum(Hour of Max Availability Need[ForecastYear,Hour!]*Availability Factor[Hour!,ZTech\
+		])
+	~	Dmnl
+	~		|
+
+Daily Residual Demand by Zone[ForecastYear,Zone]=
+	Sum(Residual Demand by zone[ForecastYear,Hour!,Zone])
+	~	MWh
+	~		|
+
+Hydropower Price[HydroDam]=
+	IF THEN ELSE(Reservoir level[HydroDam]<=Breakpoints Hydro Price[L1], 
+	  Scarcity price , 
+	
+	  IF THEN ELSE( Reservoir level[HydroDam]<=Breakpoints Hydro Price[L2] , 
+	  ((Price Most Expensive Thermo-Max( Scarcity price, Price Most Expensive Thermo))
+	      /(Breakpoints Hydro Price[L2]-Breakpoints Hydro Price[L1]))
+	      *(Reservoir level[HydroDam]-Breakpoints Hydro Price[L1])+Max( Scarcity price,Price Most Expensive Thermo\
+		), 
+	
+	    IF THEN ELSE(Reservoir level[HydroDam]<=Breakpoints Hydro Price[L3] , 
+	      ((Price Cheapest Thermo-Price Most Expensive Thermo)
+	        /(Breakpoints Hydro Price[L3]-Breakpoints Hydro Price[L2]))
+	        *(Reservoir level[HydroDam]-Breakpoints Hydro Price[L2])+Price Most Expensive Thermo\
+		, 
+	
+	     IF THEN ELSE( Reservoir level[HydroDam]<=Breakpoints Hydro Price[L4] ,
+	       ((Offer Price[HydroDam]-Price Cheapest Thermo)
+	         /(Breakpoints Hydro Price[L4]-Breakpoints Hydro Price[L3]))
+	         *(Reservoir level[HydroDam]-Breakpoints Hydro Price[L3])+Price Cheapest Thermo
+	
+	,Offer Price[HydroDam]))))
+	~	USD/MWh
+	~	IF THEN ELSE(Reservoir level[HydroDam]<=0.2, 
+		  Scarcity price , 
+		  IF THEN ELSE( Reservoir level[HydroDam]<=0.3 , 
+		  ((VMAX(Max Offer Price[Thermo2!])-Max( Scarcity price , 
+		  VMAX(Max Offer Price[Thermo2!])))/(0.3-0.2))*(Reservoir level[HydroDam]-0.2)+Max( \
+		Scarcity price ,VMAX(Max Offer Price
+		[Thermo2!])), 
+		    IF THEN ELSE( Reservoir level[HydroDam]<=0.5 , 
+		    ((vmin(Min Offer Price[Thermo1!])-VMAX(Max Offer \
+		Price[Thermo2!]))/(0.5-0.3))*(Reservoir level[HydroDam]-0.3)+VMAX(
+		Max Offer Price[Thermo2!]), 
+		     IF THEN ELSE( Reservoir level[HydroDam]<=0.8 ,((Offer Price[HydroDam]-vmin(Min \
+		Offer Price[Thermo1!]))/(0.8-0.5))*
+		(Reservoir level[HydroDam]-0.5)+vmin(Min Offer Price[Thermo1!]),Offer \
+		Price[HydroDam]))))
+	|
+
+Future Potential Generation Expansion[ZTech]:INTERPOLATE:=
+	GET XLS DATA('?Datos', 'Potential Expansion', 'B','C3')
+	~	MW
+	~		|
+
+Planned Generation Sum=
+	Sum(Executed Planned Generation[ZTech!])
+	~	MW
+	~		|
+
+Reservoir level[HydroDam]=
+	IF THEN ELSE(Reservoir Capacity[HydroDam]=0,0,
+	Hydropower Reservoir[HydroDam]/Reservoir Capacity[HydroDam])
+	~	Dmnl
+	~		|
+
+Inflows[HydroDam]=
+	Average Daily Inflows per MW[HydroDam]*Days per month*Total Hydro Generation Capacity\
+		[HydroDam]
+	~	MWh/Month
+	~	Average Daily Inflows per MW*Days per month*Total Hydro Storage Capacity
+		(Average Daily Inflows per MW*Days per month*Ituango)+Average Daily \
+		Inflows Exogen
+	|
+
+Hydropower Reservoir[HydroDam]= INTEG (
+	Inflows[HydroDam]-HydroDam Generation[HydroDam]-Spillovers[HydroDam],
+		Initial Reservoir[HydroDam])
+	~	MWh
+	~		|
+
+Reservoir Capacity[HydroDam]=
+	Average Reservoir Capacity per MW[HydroDam]*Total Hydro Generation Capacity[HydroDam\
+		]
+	~	MWh
+	~		|
+
+Spillovers[HydroDam]=
+	Max(0,
+	(Hydropower Reservoir[HydroDam]+Inflows[HydroDam]-HydroDam Generation[HydroDam])-Reservoir Capacity\
+		[HydroDam])
+	~	MWh/Month
+	~		|
+
+HydroDam Availability Factor[Hour,HydroDam]=
+	Hydro Monthly Availability Factor[HydroDam]
+	~	Dmnl
+	~		|
+
+Initial Potential Generation Expansion[ZTech]=
+	GET XLS CONSTANTS('?Datos', 'Potential Expansion', 'C2')
+	~	MW
+	~		|
+
+Planned DER Start[EnergyUsers,Zone]=
+	Planned DER Expansion[EnergyUsers,Zone]*Planned DER Expansion Switch*(1-DER Expansion Switch\
+		)
+	~	MW/Month
+	~	Si entra endógena, que no entre planeada
+	|
+
+Total Hydro Generation Capacity[HydroDam]=
+	Generation Capacity[HydroDam]
+	~	MW
+	~		|
+
+HydroDam:
+	Z1HydroDam,Z2HydroDam,Z3HydroDam,Z4HydroDam,Z5HydroDam,Z6HydroDam
+	~	
+	~		|
+
+HRoR:
+	Z1HRoR,Z2HRoR,Z3HRoR,Z4HRoR,Z5HRoR,Z6HRoR
+	~	
+	~		|
+
+Dispatch Priority[ZTech]=
+	-Offer price hydro adjusted[ZTech]
+	~	USD/MWh
+	~		|
+
+DER Investment by Social Influence Curve Parameters[Sigmoid Parameters]=
+	GET XLS CONSTANTS('?Datos', 'General Parameters', 'B28')
+	~	Dmnl
+	~		|
+
+Sigmoid Parameters:
+	c1,c2,m,r
+	~	
+	~		|
+
+DER Investment by Profit Curve Parameters[Sigmoid Parameters]=
+	GET XLS CONSTANTS('?Datos', 'General Parameters', 'B27')
+	~	Dmnl
+	~		|
+
+New BESS capacity[Zone]=
+	Planned BESS investments[Zone]
+	~	MW/Month
+	~		|
+
+Planned BESS investments[Zone]:INTERPOLATE:=
+	GET XLS DATA('?Datos', 'BESS', 'C', 'D4')
+	~	MW
+	~		|
+
+Other Tariff Components[EnergyUsers,Zone]=
+	GET XLS CONSTANTS('?Datos', 'Energy Users', 'B14')
+	~	USD/MWh
+	~	D+C+P
+	|
+
+Total BESS Capacity=
+	Sum(BESS Capacity[Zone!])/1000
+	~	GW
+	~		|
+
+BESS Capacity[Zone]= INTEG (
+	New BESS capacity[Zone],
+		Initial BESS Capacity[Zone])
+	~	MW
+	~		|
+
+EnergyUsers:
+	GET XLS SUBSCRIPT('?Datos', 'Energy Users', 'B1', 'C1', '')
+	~	
+	~	Stratum1and2,Stratum3and4,Stratum5and6,Commercial,Industrial
+	|
+
+Initial BESS Capacity[Zone]=
+	GET XLS CONSTANTS('?Datos', 'BESS', 'D2')
+	~	MW
+	~	1000
+	|
+
+BESS Duration[Zone]=
+	GET XLS CONSTANTS('?Datos', 'BESS', 'D3')
+	~	Hour
+	~		|
+
+Average Reservoir Capacity per MW[HydroDam]=
+	GET XLS CONSTANTS('?Datos', 'Hydro', 'C6' )
+	~	MWh/MW
+	~		|
+
+"Offer-Demand"[ForecastYear,Hour]=
+	Sum(Available Generation[ForecastYear,Hour,ZTech!])-Residual demand No BESS[ForecastYear\
+		,Hour]
+	~	MWh
+	~		|
+
+Initial Availability Factor[Hour,Z1Biomass]:INTERPOLATE:=
+	GET XLS DATA('?Datos', 'Availability Factor', 'B', 'C3') ~~|
+Initial Availability Factor[Hour,Z2Biomass]:INTERPOLATE:=
+	GET XLS DATA('?Datos', 'Availability Factor', 'B', 'AA3') ~~|
+Initial Availability Factor[Hour,Z3Biomass]:INTERPOLATE:=
+	GET XLS DATA('?Datos', 'Availability Factor', 'B', 'AY3') ~~|
+Initial Availability Factor[Hour,Z4Biomass]:INTERPOLATE:=
+	GET XLS DATA('?Datos', 'Availability Factor', 'B', 'BW3') ~~|
+Initial Availability Factor[Hour,Z5Biomass]:INTERPOLATE:=
+	GET XLS DATA('?Datos', 'Availability Factor', 'B', 'CU3') ~~|
+Initial Availability Factor[Hour,Z6Biomass]:INTERPOLATE:=
+	GET XLS DATA('?Datos', 'Availability Factor', 'B', 'DS3') ~~|
+Initial Availability Factor[Hour,Z1WindOnS]:INTERPOLATE:=
+	GET XLS DATA('?Datos', 'Availability Factor', 'B', 'EQ3') ~~|
+Initial Availability Factor[Hour,Z2WindOnS]:INTERPOLATE:=
+	GET XLS DATA('?Datos', 'Availability Factor', 'B', 'FO3') ~~|
+Initial Availability Factor[Hour,Z3WindOnS]:INTERPOLATE:=
+	GET XLS DATA('?Datos', 'Availability Factor', 'B', 'GM3') ~~|
+Initial Availability Factor[Hour,Z4WindOnS]:INTERPOLATE:=
+	GET XLS DATA('?Datos', 'Availability Factor', 'B', 'HK3') ~~|
+Initial Availability Factor[Hour,Z5WindOnS]:INTERPOLATE:=
+	GET XLS DATA('?Datos', 'Availability Factor', 'B', 'II3') ~~|
+Initial Availability Factor[Hour,Z6WindOnS]:INTERPOLATE:=
+	GET XLS DATA('?Datos', 'Availability Factor', 'B', 'JG3') ~~|
+Initial Availability Factor[Hour,Z1WindOffS]:INTERPOLATE:=
+	GET XLS DATA('?Datos', 'Availability Factor', 'B', 'KE3') ~~|
+Initial Availability Factor[Hour,Z2WindOffS]:INTERPOLATE:=
+	GET XLS DATA('?Datos', 'Availability Factor', 'B', 'LC3') ~~|
+Initial Availability Factor[Hour,Z3WindOffS]:INTERPOLATE:=
+	GET XLS DATA('?Datos', 'Availability Factor', 'B', 'MA3') ~~|
+Initial Availability Factor[Hour,Z4WindOffS]:INTERPOLATE:=
+	GET XLS DATA('?Datos', 'Availability Factor', 'B', 'MY3') ~~|
+Initial Availability Factor[Hour,Z5WindOffS]:INTERPOLATE:=
+	GET XLS DATA('?Datos', 'Availability Factor', 'B', 'NW3') ~~|
+Initial Availability Factor[Hour,Z6WindOffS]:INTERPOLATE:=
+	GET XLS DATA('?Datos', 'Availability Factor', 'B', 'OU3') ~~|
+Initial Availability Factor[Hour,Z1PV]:INTERPOLATE:=
+	GET XLS DATA('?Datos', 'Availability Factor', 'B', 'PS3') ~~|
+Initial Availability Factor[Hour,Z2PV]:INTERPOLATE:=
+	GET XLS DATA('?Datos', 'Availability Factor', 'B', 'QQ3') ~~|
+Initial Availability Factor[Hour,Z3PV]:INTERPOLATE:=
+	GET XLS DATA('?Datos', 'Availability Factor', 'B', 'RO3') ~~|
+Initial Availability Factor[Hour,Z4PV]:INTERPOLATE:=
+	GET XLS DATA('?Datos', 'Availability Factor', 'B', 'SM3') ~~|
+Initial Availability Factor[Hour,Z5PV]:INTERPOLATE:=
+	GET XLS DATA('?Datos', 'Availability Factor', 'B', 'TK3') ~~|
+Initial Availability Factor[Hour,Z6PV]:INTERPOLATE:=
+	GET XLS DATA('?Datos', 'Availability Factor', 'B', 'UI3') ~~|
+Initial Availability Factor[Hour,Z1HRoR]:INTERPOLATE:=
+	GET XLS DATA('?Datos', 'Availability Factor', 'B', 'VG3') ~~|
+Initial Availability Factor[Hour,Z2HRoR]:INTERPOLATE:=
+	GET XLS DATA('?Datos', 'Availability Factor', 'B', 'WE3') ~~|
+Initial Availability Factor[Hour,Z3HRoR]:INTERPOLATE:=
+	GET XLS DATA('?Datos', 'Availability Factor', 'B', 'XC3') ~~|
+Initial Availability Factor[Hour,Z4HRoR]:INTERPOLATE:=
+	GET XLS DATA('?Datos', 'Availability Factor', 'B', 'YA3') ~~|
+Initial Availability Factor[Hour,Z5HRoR]:INTERPOLATE:=
+	GET XLS DATA('?Datos', 'Availability Factor', 'B', 'YY3') ~~|
+Initial Availability Factor[Hour,Z6HRoR]:INTERPOLATE:=
+	GET XLS DATA('?Datos', 'Availability Factor', 'B', 'ZW3') ~~|
+Initial Availability Factor[Hour,Z1HydroDam]:INTERPOLATE:=
+	GET XLS DATA('?Datos', 'Availability Factor', 'B', 'AAU3') ~~|
+Initial Availability Factor[Hour,Z2HydroDam]:INTERPOLATE:=
+	GET XLS DATA('?Datos', 'Availability Factor', 'B', 'ABS3') ~~|
+Initial Availability Factor[Hour,Z3HydroDam]:INTERPOLATE:=
+	GET XLS DATA('?Datos', 'Availability Factor', 'B', 'ACQ3') ~~|
+Initial Availability Factor[Hour,Z4HydroDam]:INTERPOLATE:=
+	GET XLS DATA('?Datos', 'Availability Factor', 'B', 'ADO3') ~~|
+Initial Availability Factor[Hour,Z5HydroDam]:INTERPOLATE:=
+	GET XLS DATA('?Datos', 'Availability Factor', 'B', 'AEM3') ~~|
+Initial Availability Factor[Hour,Z6HydroDam]:INTERPOLATE:=
+	GET XLS DATA('?Datos', 'Availability Factor', 'B', 'AFK3') ~~|
+Initial Availability Factor[Hour,Z1Thermo1]:INTERPOLATE:=
+	GET XLS DATA('?Datos', 'Availability Factor', 'B', 'AGI3') ~~|
+Initial Availability Factor[Hour,Z2Thermo1]:INTERPOLATE:=
+	GET XLS DATA('?Datos', 'Availability Factor', 'B', 'AHG3') ~~|
+Initial Availability Factor[Hour,Z3Thermo1]:INTERPOLATE:=
+	GET XLS DATA('?Datos', 'Availability Factor', 'B', 'AIE3') ~~|
+Initial Availability Factor[Hour,Z4Thermo1]:INTERPOLATE:=
+	GET XLS DATA('?Datos', 'Availability Factor', 'B', 'AJC3') ~~|
+Initial Availability Factor[Hour,Z5Thermo1]:INTERPOLATE:=
+	GET XLS DATA('?Datos', 'Availability Factor', 'B', 'AKA3') ~~|
+Initial Availability Factor[Hour,Z6Thermo1]:INTERPOLATE:=
+	GET XLS DATA('?Datos', 'Availability Factor', 'B', 'AKY3') ~~|
+Initial Availability Factor[Hour,Z1Thermo2]:INTERPOLATE:=
+	GET XLS DATA('?Datos', 'Availability Factor', 'B', 'ALW3') ~~|
+Initial Availability Factor[Hour,Z2Thermo2]:INTERPOLATE:=
+	GET XLS DATA('?Datos', 'Availability Factor', 'B', 'AMU3') ~~|
+Initial Availability Factor[Hour,Z3Thermo2]:INTERPOLATE:=
+	GET XLS DATA('?Datos', 'Availability Factor', 'B', 'ANS3') ~~|
+Initial Availability Factor[Hour,Z4Thermo2]:INTERPOLATE:=
+	GET XLS DATA('?Datos', 'Availability Factor', 'B', 'AOQ3') ~~|
+Initial Availability Factor[Hour,Z5Thermo2]:INTERPOLATE:=
+	GET XLS DATA('?Datos', 'Availability Factor', 'B', 'APO3') ~~|
+Initial Availability Factor[Hour,Z6Thermo2]:INTERPOLATE:=
+	GET XLS DATA('?Datos', 'Availability Factor', 'B', 'AQM3') ~~|
+Initial Availability Factor[Hour,Z1Geothermal]:INTERPOLATE:=
+	GET XLS DATA('?Datos', 'Availability Factor', 'B', 'ARK3') ~~|
+Initial Availability Factor[Hour,Z2Geothermal]:INTERPOLATE:=
+	GET XLS DATA('?Datos', 'Availability Factor', 'B', 'ASI3') ~~|
+Initial Availability Factor[Hour,Z3Geothermal]:INTERPOLATE:=
+	GET XLS DATA('?Datos', 'Availability Factor', 'B', 'ATG3') ~~|
+Initial Availability Factor[Hour,Z4Geothermal]:INTERPOLATE:=
+	GET XLS DATA('?Datos', 'Availability Factor', 'B', 'AUE3') ~~|
+Initial Availability Factor[Hour,Z5Geothermal]:INTERPOLATE:=
+	GET XLS DATA('?Datos', 'Availability Factor', 'B', 'AVC3') ~~|
+Initial Availability Factor[Hour,Z6Geothermal]:INTERPOLATE:=
+	GET XLS DATA('?Datos', 'Availability Factor', 'B', 'AWA3') ~~|
+Initial Availability Factor[Hour,Z1PVBESSOp1]:INTERPOLATE:=
+	GET XLS DATA('?Datos', 'Availability Factor', 'B', 'AWY3') ~~|
+Initial Availability Factor[Hour,Z2PVBESSOp1]:INTERPOLATE:=
+	GET XLS DATA('?Datos', 'Availability Factor', 'B', 'AXW3') ~~|
+Initial Availability Factor[Hour,Z3PVBESSOp1]:INTERPOLATE:=
+	GET XLS DATA('?Datos', 'Availability Factor', 'B', 'AYU3') ~~|
+Initial Availability Factor[Hour,Z4PVBESSOp1]:INTERPOLATE:=
+	GET XLS DATA('?Datos', 'Availability Factor', 'B', 'AZS3') ~~|
+Initial Availability Factor[Hour,Z5PVBESSOp1]:INTERPOLATE:=
+	GET XLS DATA('?Datos', 'Availability Factor', 'B', 'BAQ3') ~~|
+Initial Availability Factor[Hour,Z6PVBESSOp1]:INTERPOLATE:=
+	GET XLS DATA('?Datos', 'Availability Factor', 'B', 'BBO3') ~~|
+Initial Availability Factor[Hour,Z1PVBESSOp2]:=
+	GET XLS DATA('?Datos', 'Availability Factor', 'B', 'BCM3') ~~|
+Initial Availability Factor[Hour,Z2PVBESSOp2]:=
+	GET XLS DATA('?Datos', 'Availability Factor', 'B', 'BDK3') ~~|
+Initial Availability Factor[Hour,Z3PVBESSOp2]:=
+	GET XLS DATA('?Datos', 'Availability Factor', 'B', 'BEI3') ~~|
+Initial Availability Factor[Hour,Z4PVBESSOp2]:=
+	GET XLS DATA('?Datos', 'Availability Factor', 'B', 'BFG3') ~~|
+Initial Availability Factor[Hour,Z5PVBESSOp2]:=
+	GET XLS DATA('?Datos', 'Availability Factor', 'B', 'BGE3') ~~|
+Initial Availability Factor[Hour,Z6PVBESSOp2]:=
+	GET XLS DATA('?Datos', 'Availability Factor', 'B', 'BHC3') ~~|
+Initial Availability Factor[Hour,Z1Other1]:=
+	GET XLS DATA('?Datos', 'Availability Factor', 'B', 'BIA3') ~~|
+Initial Availability Factor[Hour,Z2Other1]:=
+	GET XLS DATA('?Datos', 'Availability Factor', 'B', 'BIY3') ~~|
+Initial Availability Factor[Hour,Z3Other1]:=
+	GET XLS DATA('?Datos', 'Availability Factor', 'B', 'BJW3') ~~|
+Initial Availability Factor[Hour,Z4Other1]:=
+	GET XLS DATA('?Datos', 'Availability Factor', 'B', 'BKU3') ~~|
+Initial Availability Factor[Hour,Z5Other1]:=
+	GET XLS DATA('?Datos', 'Availability Factor', 'B', 'BLS3') ~~|
+Initial Availability Factor[Hour,Z6Other1]:=
+	GET XLS DATA('?Datos', 'Availability Factor', 'B', 'BMQ3') ~~|
+Initial Availability Factor[Hour,Z1Other2]:=
+	GET XLS DATA('?Datos', 'Availability Factor', 'B', 'BNO3') ~~|
+Initial Availability Factor[Hour,Z2Other2]:=
+	GET XLS DATA('?Datos', 'Availability Factor', 'B', 'BOM3') ~~|
+Initial Availability Factor[Hour,Z3Other2]:=
+	GET XLS DATA('?Datos', 'Availability Factor', 'B', 'BPK3') ~~|
+Initial Availability Factor[Hour,Z4Other2]:=
+	GET XLS DATA('?Datos', 'Availability Factor', 'B', 'BQI3') ~~|
+Initial Availability Factor[Hour,Z5Other2]:INTERPOLATE:=
+	GET XLS DATA('?Datos', 'Availability Factor', 'B', 'BRG3') ~~|
+Initial Availability Factor[Hour,Z6Other2]:=
+	GET XLS DATA('?Datos', 'Availability Factor', 'B', 'BSE3') ~~|
+Initial Availability Factor[Hour,Z1Other3]:=
+	GET XLS DATA('?Datos', 'Availability Factor', 'B', 'BTC3') ~~|
+Initial Availability Factor[Hour,Z2Other3]:=
+	GET XLS DATA('?Datos', 'Availability Factor', 'B', 'BUA3') ~~|
+Initial Availability Factor[Hour,Z3Other3]:=
+	GET XLS DATA('?Datos', 'Availability Factor', 'B', 'BUY3') ~~|
+Initial Availability Factor[Hour,Z4Other3]:=
+	GET XLS DATA('?Datos', 'Availability Factor', 'B', 'BVW3') ~~|
+Initial Availability Factor[Hour,Z5Other3]:=
+	GET XLS DATA('?Datos', 'Availability Factor', 'B', 'BWU3') ~~|
+Initial Availability Factor[Hour,Z6Other3]:=
+	GET XLS DATA('?Datos', 'Availability Factor', 'B', 'BXS3')
+	~	Dmnl
+	~	GET XLS CONSTANTS( '?Datos', 'Availability Factor' , 'C4' )
+	|
+
+Total Generation Capacity=
+	Sum(Generation Capacity[All!])
+	/1000
+	~	GW
+	~		|
+
+Initial Reservoir[HydroDam]=
+	GET XLS CONSTANTS('?Datos', 'Hydro', 'C5')
+	~	MWh
+	~		|
+
+Average Daily Inflows per MW[HydroDam]:INTERPOLATE:=
+	GET XLS DATA('?Datos', 'Hydro', 'B', 'C7')
+	~	MWh/MW
+	~		|
+
+Days per month=
+	30.416
+	~	Days/Month
+	~		|
+
+Planned DER Expansion[EnergyUsers,Z1]:INTERPOLATE:=
+	GET XLS DATA('?Datos', 'Planned DER Expansion', 'B', 'C2') ~~|
+Planned DER Expansion[EnergyUsers,Z2]:INTERPOLATE:=
+	GET XLS DATA('?Datos', 'Planned DER Expansion', 'B', 'E2') ~~|
+Planned DER Expansion[EnergyUsers,Z3]:INTERPOLATE:=
+	GET XLS DATA('?Datos', 'Planned DER Expansion', 'B', 'G2') ~~|
+Planned DER Expansion[EnergyUsers,Z4]:INTERPOLATE:=
+	GET XLS DATA('?Datos', 'Planned DER Expansion', 'B', 'I2') ~~|
+Planned DER Expansion[EnergyUsers,Z5]:INTERPOLATE:=
+	GET XLS DATA('?Datos', 'Planned DER Expansion', 'B', 'K2') ~~|
+Planned DER Expansion[EnergyUsers,Z6]:INTERPOLATE:=
+	GET XLS DATA('?Datos', 'Planned DER Expansion', 'B', 'M2')
+	~	MW
+	~		|
+
+Planned DER Expansion Switch=
+	GET XLS CONSTANTS('?Datos', 'General Parameters', 'B15')
+	~	Dmnl
+	~		|
+
+Fraction of Demand by User Type[EnergyUsers]=
+	GET XLS CONSTANTS('?Datos', 'Energy Users', 'B2')
+	~	Dmnl
+	~		|
+
+Initial PV DER Capacity[EnergyUsers,Zone]=
+	GET XLS CONSTANTS('?Datos', 'Zone', 'B2')
+	~	MW
+	~		|
+
+Transmission Cost per km per day=
+	GET XLS CONSTANTS('?Datos', 'General Parameters', 'B6')
+	~	USD/km/Day
+	~		|
+
+LCOE[EnergyUsers,ZTech]=
+	GET XLS CONSTANTS('?Datos', 'Base', 'C6')
+	~	USD/MWh
+	~		|
+
+"Zonal Prices?"=
+	GET XLS CONSTANTS( '?Datos', 'General Parameters', 'B1')
+	~	Dmnl
+	~		|
+
+Desired Availability Margin=
+	GET XLS CONSTANTS('?Datos', 'General Parameters', 'B11')
+	~	Dmnl
+	~		|
+
+Hour:
+	(H0-H23)
+	~	
+	~		|
+
+Max Offer Price[ZTech]=
+	GET XLS CONSTANTS( '?Datos', 'Base', 'C4')
+	~	USD/MWh
+	~		|
+
+Min Offer Price[ZTech]=
+	GET XLS CONSTANTS( '?Datos', 'Base', 'C3')
+	~	USD/MWh
+	~		|
+
+Interconnection Zones by Case[Int, Zone]=
+	GET XLS CONSTANTS('?Datos', 'Interconnections', 'I3')
+	~	Dmnl
+	~		|
+
+Max Grid Capacity=
+	GET XLS CONSTANTS('?Datos', 'General Parameters', 'B9')
+	~	MW
+	~		|
+
+Min Grid Capacity=
+	GET XLS CONSTANTS('?Datos', 'General Parameters', 'B8')
+	~	MW
+	~		|
+
+Interconnection Lenght by Case[Int]=
+	GET XLS CONSTANTS('?Datos', 'Interconnections', 'O3*')
+	~	km
+	~		|
+
+Int:
+	(Int1-Int15)
+	~	
+	~		|
+
+Interconnection Pairs Cases[Int, Zone]=
+	GET XLS CONSTANTS('?Datos', 'Interconnections', 'C3')
+	~	Dmnl
+	~		|
+
+Grid Security Margin=
+	GET XLS CONSTANTS( '?Datos', 'General Parameters', 'B7' )
+	~	MW
+	~		|
+
+Initial Interconnection Capacity[Int]=
+	GET XLS CONSTANTS('?Datos','Interconnections','R3*' )
+	~	MW
+	~	GET XLS CONSTANTS('?Datos','Interconnections' ,'C24' )
+	|
+
+Biomass:
+	Z1Biomass,Z2Biomass,Z3Biomass,Z4Biomass,Z5Biomass,Z6Biomass
+	~	
+	~		|
+
+Thermo1:
+	Z1Thermo1, Z2Thermo1, Z3Thermo1, Z4Thermo1, Z5Thermo1, Z6Thermo1
+	~	
+	~		|
+
+PV:
+	Z1PV,Z2PV,Z3PV,Z4PV,Z5PV,Z6PV -> Zone
+	~	
+	~		|
+
+Tech:
+	TBiomass,TWindOnS,TWindOffS,TPV,THydroDam,THRoR,TThermo1,TThermo2,TGeothermal,TPVBESSOp1\
+		, TPVBESSOp2, TOther1, TOther2, TOther3
+	~	
+	~		|
+
+Initial Generation Capacity[ZTech]=
+	GET XLS CONSTANTS('?Datos', 'Base', 'C5')
+	~	MW
+	~		|
+
+Initial Transmission for Demand=
+	GET XLS CONSTANTS('?Datos', 'General Parameters', 'B4')
+	~	km
+	~		|
+
+Initial Transmission for Generation=
+	GET XLS CONSTANTS('?Datos', 'General Parameters', 'B3')
+	~	km
+	~		|
+
+Initial Interconnection km[Int]=
+	GET XLS CONSTANTS('?Datos', 'Interconnections', 'q3*')
+	~	km
+	~	GET XLS CONSTANTS('?Datos', 'Interconnections', 'Q3*')
+	|
+
+Offer Price[ZTech]=
+	GET XLS CONSTANTS('?Datos', 'Base' , 'C2' )
+	~	USD/MWh
+	~		|
+
+Old Transmission Correction=
+	GET XLS CONSTANTS('?Datos', 'General Parameters', 'B5')
+	~	km
+	~		|
+
+Planned Generation Capacity[ZTech]:INTERPOLATE:=
+	GET XLS DATA('?Datos', 'Generation Expansion', 'B', 'C2')
+	~	MW/Month
+	~		|
+
+Planned Generation Switch=
+	GET XLS CONSTANTS('?Datos', 'General Parameters', 'B12')
+	~	Dmnl
+	~		|
+
+Estimated Transmission Factor for Generation[ZTech]=
+	GET XLS CONSTANTS('?Datos', 'Base', 'C8')
+	~	km/MW
+	~		|
+
+Estimated Transmission Factor per Demand=
+	GET XLS CONSTANTS('?Datos', 'General Parameters', 'B2')
+	~	km/MW
+	~		|
+
+Z1Tech:
+	GET XLS SUBSCRIPT('?Datos', 'Base', 'C1', 'P1', '' )
+	~	
+	~		|
+
+Z2Tech:
+	GET XLS SUBSCRIPT('?Datos', 'Base', 'Q1', 'AD1', '' )
+	~	
+	~		|
+
+Z3Tech:
+	GET XLS SUBSCRIPT('?Datos', 'Base', 'AE1', 'AR1', '' )
+	~	
+	~		|
+
+Z4Tech:
+	GET XLS SUBSCRIPT('?Datos', 'Base', 'AS1', 'BF1', '' )
+	~	
+	~		|
+
+Z5Tech:
+	GET XLS SUBSCRIPT('?Datos', 'Base', 'BG1', 'BT1', '' )
+	~	
+	~		|
+
+Z6Tech:
+	GET XLS SUBSCRIPT('?Datos', 'Base', 'BU1', 'CH1', '' )
+	~	
+	~		|
+
+Zone:
+	(Z1-Z6) 
+	-> PV
+	~	
+	~		|
+
+ZTech:
+	Z1Tech,Z2Tech,Z3Tech,Z4Tech,Z5Tech,Z6Tech
+	~	
+	~		|
+
+********************************************************
+	.Control
+********************************************************~
+		Simulation Control Parameters
+	|
+
+FINAL TIME = 195
+	~	Month
+	~	The final time for the simulation.
+	|
+
+INITIAL TIME = 0
+	~	Month
+	~	The initial time for the simulation.
+	|
+
+SAVEPER = 
+        TIME STEP
+	~	Month [0,?]
+	~	The frequency with which output is stored.
+	|
+
+TIME STEP = 0.25
+	~	Month [0,?]
+	~	The time step for the simulation.
+	|
